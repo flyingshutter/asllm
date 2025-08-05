@@ -6,6 +6,7 @@ from prompt_toolkit.history import FileHistory
 from rich.console import Console
 from rich.markdown import Markdown
 
+import tempfile
 import gemini_search
 
 help_str="""[b]Command Line LLM[/b]
@@ -21,7 +22,8 @@ commands:
 class AsLlm():
     def __init__(self):
         # set up prompt toolkit
-        file_history = FileHistory("/tmp/.llm-history")
+        print(tempfile.gettempdir())
+        file_history = FileHistory(f"{tempfile.gettempdir()}/.llm-history")
         self.session = PromptSession(history=file_history)
         self.kb = KeyBindings()
         self.register_keybindings()
