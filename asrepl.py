@@ -15,7 +15,7 @@ commands:
 <Ctrl-d> Exit
     <F1> Short Answers
     <F2> Long Answers [#777777]
-   <F11> Show Chunks
+   <F10> Show Chunks
    <F12> Show History[/#777777] 
 """
 
@@ -39,9 +39,9 @@ class AsLlm():
 
 
     def register_keybindings(self):
-        # @self.kb.add('f11')
-        # def _(event):
-        #     print(self.chunks)
+        @self.kb.add('f10')
+        def _(event):
+            print(self.chunks)
 
         @self.kb.add('f12')
         def _(event):
