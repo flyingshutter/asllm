@@ -14,11 +14,21 @@ class GeminiSearch():
         self.tools = [
             types.Tool(googleSearch=types.GoogleSearch()),
         ]
+
         self.generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=0),
             tools=self.tools,
+            system_instruction=[
+                types.Part.from_text(text=""),
+            ],
             response_mime_type="text/plain",
         )
+
+
+    def update_system_instruction(self, instruction):
+        self.generate_content_config.system_instruction = [
+            types.Part.from_text(text=instruction),
+        ]    
 
 
     def add_content(self, role, text):

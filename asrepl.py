@@ -43,6 +43,7 @@ class AsLlm():
         @self.kb.add('f12')
         def _(event):
             print(self.llm.contents)
+            print(self.llm.generate_content_config.system_instruction)
 
         @self.kb.add("c-y")
         def _(event):
@@ -52,15 +53,15 @@ class AsLlm():
 
         @self.kb.add("f1")
         def _(event):
-            self.console.print("[on green] short [/on green]", end="")
             self.state = "short"
-            self.llm.add_content(role="user", text="from now on always answer short and precise without explanation")
-        
+            self.console.print("[on green] short [/on green]", end="")
+            self.llm.update_system_instruction("answer short and precise, don't explain, just answer the question")
+
         @self.kb.add("f2")
         def _(event):
-            self.console.print("[on green] std [/on green]", end="")
             self.state = "std"
-            self.llm.add_content(role="user", text="forget my previous instructions and answer as you have been trained")
+            self.console.print("[on green] std [/on green]", end="")
+            self.llm.update_system_instruction("")
 
 
     def process_prompt(self, prompt):        
