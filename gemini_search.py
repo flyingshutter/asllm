@@ -53,16 +53,13 @@ class GeminiSearch():
     def generate(self, user_prompt):
         self.add_content(role="user", text=user_prompt)
         
-        tmp_result = ""
         for chunk in self.client.models.generate_content_stream(
             model=self.model,
             contents=self.contents,
             config=self.config,
         ):  
-            tmp_result += chunk.text if chunk.text else ""
             yield chunk
         
-        self.add_content(role="model", text=tmp_result)
 
 
 if __name__ == "__main__":

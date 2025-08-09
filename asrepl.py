@@ -83,17 +83,26 @@ class AsLlm():
 
     def process_prompt(self, prompt):        
         model_output = ""
+        grounding_chunks = []
         num_dots = 0
         for chunk in self.llm.generate(prompt):
             self.chunks += chunk
             if type(chunk.text)==str:
                 model_output += chunk.text
+            
+            if chunk.candidates[0].grounding_metadata.grounding_chunks:
+                grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
+            
             self.console.print("\r[on green]" + " ", end="")
             num_dots += 1
 
         self.console.print("\r[on green]" + " " * (self.console.width - num_dots) + "[/on green]")
         self.console.print(Markdown(model_output))
-        print()
+        
+        for grounding_chunk in grounding_chunks:
+            self.console.print(Markdown(f"[{grounding_chunk.web.title}]({grounding_chunk.web.uri})"))
+
+        self.llm.add_content(role="model", text=model_output)
 
 
     def run(self):
