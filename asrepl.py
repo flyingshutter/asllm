@@ -90,8 +90,9 @@ class AsLlm():
             if type(chunk.text)==str:
                 model_output += chunk.text
             
-            if chunk.candidates[0].grounding_metadata.grounding_chunks:
-                grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
+            if self.state_google:
+                if chunk.candidates[0].grounding_metadata.grounding_chunks:
+                    grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
             
             self.console.print("\r[on green]" + " ", end="")
             num_dots += 1
