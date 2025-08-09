@@ -15,7 +15,7 @@ commands:
 <Ctrl-d> Exit
     <F1> Short Answers
     <F2> Long Answers [#777777]
-    <F4> Toggle Google Search
+    <F3> Toggle Google Search
    <F10> Show Chunks
    <F12> Show History[/#777777] 
 """
