@@ -11,7 +11,7 @@ class GeminiSearch():
         self.tools = [types.Tool(googleSearch=types.GoogleSearch())]
         self.make_config()
 
-        self.model = "gemini-2.0-flash"
+        self.model = "gemini-2.5-flash"
         self.contents = []
 
 
