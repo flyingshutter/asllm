@@ -7,7 +7,7 @@ class GeminiSearch():
     def __init__(self):
         self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        self.system_instruction = [types.Part.from_text(text="answer short and precise, do not explain your answer")]
+        self.system_instruction = [types.Part.from_text(text="")]
         self.tools = [types.Tool(googleSearch=types.GoogleSearch())]
         self.make_config()
 
