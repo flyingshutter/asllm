@@ -72,10 +72,11 @@ class AsLlm():
         num_dots = 0
         for chunk in self.llm.generate(prompt):
             self.chunks += chunk
-            model_output += chunk.text
+            if type(chunk.text)==str:
+                model_output += chunk.text
             self.console.print("\r[on green]" + " ", end="")
             num_dots += 1
-        
+
         self.console.print("\r[on green]" + " " * (self.console.width - num_dots) + "[/on green]")
         self.console.print(Markdown(model_output))
         print()
