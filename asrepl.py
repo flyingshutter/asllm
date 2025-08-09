@@ -15,6 +15,7 @@ commands:
 <Ctrl-d> Exit
     <F1> Short Answers
     <F2> Long Answers [#777777]
+    <F4> Toggle Google Search
    <F10> Show Chunks
    <F12> Show History[/#777777] 
 """
@@ -33,6 +34,7 @@ class AsLlm():
 
         self.llm = gemini_search.GeminiSearch()
         self.state = "std"
+        self.state_google = "google"
         self.chunks = []
 
         self.console.print(help_str)
@@ -67,6 +69,18 @@ class AsLlm():
             self.llm.update_system_instruction("")
 
 
+        @self.kb.add("f3")
+        def _(event):
+            if not self.state_google:
+                self.state_google = "google"
+                self.console.print("[on green] google [/on green]", end="")
+                self.llm.switch_google_search(True)
+            else:
+                self.state_google = ""
+                self.console.print("[on green] no google [/on green]", end="")
+                self.llm.switch_google_search(False)
+
+
     def process_prompt(self, prompt):        
         model_output = ""
         num_dots = 0
@@ -85,7 +99,7 @@ class AsLlm():
     def run(self):
         while True:
             try:
-                prompt = self.session.prompt(f'{self.state}> ', key_bindings=self.kb)
+                prompt = self.session.prompt(f'{self.state} {self.state_google}> ', key_bindings=self.kb)
                 if prompt.strip().lower() == 'exit':
                     break
                 
