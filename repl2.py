@@ -167,6 +167,7 @@ def main():
                 output_area.buffer.cursor_position = len(output_area.text)
                 repl.text = ''
                 adjust_repl_height()
+                
     app = Application(
         layout=Layout(root_container, focused_element=repl),
         key_bindings=kb,
