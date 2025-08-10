@@ -9,22 +9,20 @@ from rich.markdown import Markdown
 import tempfile
 import gemini_search
 
-help_str="""[b]Command Line LLM[/b]
-commands:
-<Ctrl-y> Clear History
-<Ctrl-d> Exit
-    <F1> Short Answers
-    <F2> Long Answers [#777777]
-    <F3> Toggle Google Search
-   <F10> Show Chunks
-   <F12> Show History[/#777777] 
+help_str="""**Command Line LLM**  
+`<Ctrl-y>` Clear History  
+`<Ctrl-d>` Exit  
+`<F1>`     Short Answers  
+`<F2>`     Long Answers  
+`<F3>`     Toggle Google Search  
+`<F10>`    Show Chunks  
+`<F12>`    Show History
 """
 
 
 class AsLlm():
     def __init__(self):
         # set up prompt toolkit
-        print(tempfile.gettempdir())
         file_history = FileHistory(f"{tempfile.gettempdir()}/.llm-history")
         self.session = PromptSession(history=file_history)
         self.kb = KeyBindings()
@@ -37,7 +35,7 @@ class AsLlm():
         self.state_google = "google"
         self.chunks = []
 
-        self.console.print(help_str)
+        self.console.print(Markdown(help_str))
 
 
     def register_keybindings(self):
