@@ -2,6 +2,9 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.application import get_app 
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.styles import Style      
+from prompt_toolkit.formatted_text import FormattedText as FT                                                                    
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -10,13 +13,10 @@ import tempfile
 import gemini_search
 
 help_str="""**Command Line LLM**  
-`<Ctrl-y>` Clear History  
-`<Ctrl-d>` Exit  
-`<F1>`     Short Answers  
-`<F2>`     Long Answers  
+`<F1>`     Toggle Standard/Short Answer  
 `<F3>`     Toggle Google Search  
-`<F10>`    Show Chunks  
-`<F12>`    Show History
+`<Ctrl-y>` Clear Chat History  
+`<Ctrl-d>` Exit   (or type exit)  
 """
 
 
@@ -52,29 +52,23 @@ class AsLlm():
         def _(event):
             self.chunks = []
             self.llm.clear_contents()
-            self.console.print("[on #003300] History deleted [/on #003300]", end="")
 
         @self.kb.add("f1")
         def _(event):
-            self.state = "short"
-            self.console.print("[on #003300] short [/on #003300]", end="")
-            self.llm.update_system_instruction("answer short and precise, don't explain, just answer the question")
-
-        @self.kb.add("f2")
-        def _(event):
-            self.state = "std"
-            self.console.print("[on #003300] std [/on #003300]", end="")
-            self.llm.update_system_instruction("")
+            if self.state == "short":
+                self.state = "std"
+                self.llm.update_system_instruction("")
+            else:
+                self.state = "short"
+                self.llm.update_system_instruction("answer short and precise, don't explain, just answer the question")
 
         @self.kb.add("f3")
         def _(event):
             if not self.state_google:
                 self.state_google = "google"
-                self.console.print("[on #003300] google [/on #003300]", end="")
                 self.llm.switch_google_search(True)
             else:
                 self.state_google = ""
-                self.console.print("[on #003300] no google [/on #003300]", end="")
                 self.llm.switch_google_search(False)
 
 
@@ -104,10 +98,19 @@ class AsLlm():
         self.llm.add_content(role="model", text=model_output)
 
 
+    def make_bottom_toolbar(self):
+        toolbar_string = f' Status: {"std  " if self.state == "std" else "short"}       {"   "+self.state_google if self.state_google else "no google"} {"          chat history empty" if not self.llm.contents else ""}\n'
+        toolbar_string += '<style bg="#aaaaaa"> F1: short/std   F3: google on/off     Ctrl+y: clear chat history😀   </style>'
+        return HTML(toolbar_string)
+
+
     def run(self):
         while True:
             try:
-                prompt = self.session.prompt(f'{self.state} {self.state_google}> ', key_bindings=self.kb)
+                prompt = self.session.prompt(f'prompt> ', 
+                                             style=Style.from_dict({'bottom-toolbar': "#0C2B06 bg:#00ff44"}), 
+                                             key_bindings=self.kb,
+                                             bottom_toolbar=self.make_bottom_toolbar)
                 if prompt.strip().lower() == 'exit':
                     break
                 
