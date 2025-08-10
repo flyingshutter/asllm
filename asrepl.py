@@ -98,8 +98,9 @@ class AsLlm():
         self.console.print("\r[on green]" + " " * (self.console.width - num_dots) + "[/on green]")
         self.console.print(Markdown(model_output))
         
-        for grounding_chunk in grounding_chunks:
-            self.console.print(Markdown(f"[{grounding_chunk.web.title}]({grounding_chunk.web.uri})"))
+        link_list = [f"[{chunk.web.title}]({chunk.web.uri}) " for chunk in grounding_chunks]
+        link_string = " ".join(link_list)
+        self.console.print(Markdown(link_string))
 
         self.llm.add_content(role="model", text=model_output)
 
