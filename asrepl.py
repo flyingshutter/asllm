@@ -66,7 +66,6 @@ class AsLlm():
             self.console.print("[on #003300] std [/on #003300]", end="")
             self.llm.update_system_instruction("")
 
-
         @self.kb.add("f3")
         def _(event):
             if not self.state_google:
