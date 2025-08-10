@@ -44,15 +44,6 @@ def main():
         read_only=True,
     )
 
-    def get_output_height():
-        try:
-            app = get_app()
-            total_height = app.output.get_size().rows
-            # 1 for statusbar, 1 for separator, 1 for prompt, 1 for padding
-            return max(1, total_height - 4)
-        except Exception:
-            return 10
-
     output_area = TextArea(
         style="class:output-area",
         # height=get_output_height,
