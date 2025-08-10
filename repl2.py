@@ -55,17 +55,18 @@ def main():
 
     output_area = TextArea(
         style="class:output-area",
-        height=get_output_height,
+        # height=get_output_height,
         focusable=True,
         read_only=True,
         scrollbar=True,
-        wrap_lines=True
+        wrap_lines=False
     )
     
     repl = TextArea(
         prompt='>>> ',
+        height=2,
         multiline=True,
-        wrap_lines=False,
+        wrap_lines=True,
     )
 
     root_container = HSplit([
@@ -100,6 +101,18 @@ def main():
         else:
             history_index[0] = len(command_history)
             repl.text = ''
+
+    def adjust_repl_height():
+        # Set repl height to number of lines in repl.text, min 2, max 10
+        lines = repl.text.count('\n') + 1
+        repl.height = min(max(lines, 2), 10)
+
+    @kb.add('c-a')
+    def _(event):
+        # Insert line break at cursor position and adjust height
+        buffer = repl.buffer
+        buffer.insert_text('\n')
+        adjust_repl_height()
 
     @kb.add('f1')
     def _(event):
@@ -149,11 +162,11 @@ def main():
             if text != "":
                 command_history.append(text)
                 history_index[0] = len(command_history)
-                save_history()
 
                 output_area.text += f'You entered: {text}\n'
                 output_area.buffer.cursor_position = len(output_area.text)
                 repl.text = ''
+                adjust_repl_height()
     app = Application(
         layout=Layout(root_container, focused_element=repl),
         key_bindings=kb,
