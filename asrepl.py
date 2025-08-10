@@ -52,18 +52,18 @@ class AsLlm():
         def _(event):
             self.chunks = []
             self.llm.clear_contents()
-            self.console.print("[on green] History deleted [/on green]", end="")
+            self.console.print("[on #003300] History deleted [/on #003300]", end="")
 
         @self.kb.add("f1")
         def _(event):
             self.state = "short"
-            self.console.print("[on green] short [/on green]", end="")
+            self.console.print("[on #003300] short [/on #003300]", end="")
             self.llm.update_system_instruction("answer short and precise, don't explain, just answer the question")
 
         @self.kb.add("f2")
         def _(event):
             self.state = "std"
-            self.console.print("[on green] std [/on green]", end="")
+            self.console.print("[on #003300] std [/on #003300]", end="")
             self.llm.update_system_instruction("")
 
 
@@ -71,11 +71,11 @@ class AsLlm():
         def _(event):
             if not self.state_google:
                 self.state_google = "google"
-                self.console.print("[on green] google [/on green]", end="")
+                self.console.print("[on #003300] google [/on #003300]", end="")
                 self.llm.switch_google_search(True)
             else:
                 self.state_google = ""
-                self.console.print("[on green] no google [/on green]", end="")
+                self.console.print("[on #003300] no google [/on #003300]", end="")
                 self.llm.switch_google_search(False)
 
 
@@ -92,10 +92,10 @@ class AsLlm():
                 if chunk.candidates[0].grounding_metadata.grounding_chunks:
                     grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
             
-            self.console.print("\r[on green]" + " ", end="")
+            self.console.print("\r[on #003300]" + " ", end="")
             num_dots += 1
 
-        self.console.print("\r[on green]" + " " * (self.console.width - num_dots) + "[/on green]")
+        self.console.print("\r[on #003300]" + " " * (self.console.width - num_dots) + "[/on #003300]")
         self.console.print(Markdown(model_output))
         
         link_list = [f"[{chunk.web.title}]({chunk.web.uri}) " for chunk in grounding_chunks]
