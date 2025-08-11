@@ -48,7 +48,7 @@ class AsLlm():
             print(self.llm.contents)
             print(self.llm.generate_content_config.system_instruction)
 
-        @self.kb.add("c-y")
+        @self.kb.add("c-x")
         def _(event):
             self.chunks = []
             self.llm.clear_contents()
@@ -99,8 +99,8 @@ class AsLlm():
 
 
     def make_bottom_toolbar(self):
-        toolbar_string = f' Status: {"std  " if self.state == "std" else "short"}       {"   "+self.state_google if self.state_google else "no google"} {"          chat history empty" if not self.llm.contents else ""}\n'
-        toolbar_string += '<style bg="#aaaaaa"> F1: short/std   F3: google on/off     Ctrl+y: clear chat history😀   </style>'
+        toolbar_string = f' Status:{"std  " if self.state == "std" else "short"}       {"   "+self.state_google if self.state_google else "no google"} {"          chat history empty" if not self.llm.contents else ""}\n'
+        toolbar_string += '<style bg="#aaaaaa">F1: short/std   F3: google on/off     Ctrl-x: clear chat history😀   </style>'
         return HTML(toolbar_string)
 
 
@@ -108,10 +108,10 @@ class AsLlm():
         while True:
             try:
                 prompt = self.session.prompt(f'prompt> ', 
-                                             style=Style.from_dict({'bottom-toolbar': "#0C2B06 bg:#00ff44"}), 
+                                             style=Style.from_dict({'bottom-toolbar': "#1C2B16 bg:#00ff44"}), 
                                              key_bindings=self.kb,
                                              bottom_toolbar=self.make_bottom_toolbar)
-                if prompt.strip().lower() == 'exit':
+                if prompt.strip().lower() in ['exit', 'quit']:
                     break
                 
                 if len(prompt.strip()) == 0:
