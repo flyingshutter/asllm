@@ -99,7 +99,7 @@ class AsLlm():
 
 
     def make_bottom_toolbar(self):
-        toolbar_string = f' Status:{"std  " if self.state == "std" else "short"}       {"   "+self.state_google if self.state_google else "no google"} {"          chat history empty" if not self.llm.contents else ""}\n'
+        toolbar_string = f' {"std  " if self.state == "std" else "short"}       {"   "+self.state_google if self.state_google else "no google"} {"          chat history empty" if not self.llm.contents else ""}\n'
         toolbar_string += '<style bg="#aaaaaa">F1: short/std   F3: google on/off     Ctrl-x: clear chat history😀   </style>'
         return HTML(toolbar_string)
 
