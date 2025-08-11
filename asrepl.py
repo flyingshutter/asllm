@@ -19,6 +19,7 @@ help_str="""**Command Line LLM**
 `<Ctrl-d>` Exit   (or type exit)  
 """
 
+instruction_dict = { "short": 'answer short and precise, do not explain, just answer the question. If the prompt starts with "exp", give a detailed answer with explanation.', }
 
 class AsLlm():
     def __init__(self):
@@ -60,7 +61,7 @@ class AsLlm():
                 self.llm.update_system_instruction("")
             else:
                 self.state = "short"
-                self.llm.update_system_instruction("answer short and precise, don't explain, just answer the question")
+                self.llm.update_system_instruction(instruction_dict["short"])
 
         @self.kb.add("f3")
         def _(event):
