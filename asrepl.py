@@ -121,15 +121,6 @@ class AsLlm():
         return file_name
 
 
-    def add_file_to_content(self, file_name):
-        mime_type = mimetypes.guess_type(file_name)[0]
-        with open(file_name, "rb") as f:
-            encoded_string = base64.b64encode(f.read()).decode('utf-8')
-        with open(file_name, "rb") as f:
-            bin_data = f.read()
-        self.llm.add_bytes_to_content(role="user", mime_type=mime_type, data=encoded_string, bin_data=bin_data) 
-
-
     def run(self):
         while True:
             try:
@@ -148,7 +139,7 @@ class AsLlm():
 
                 file_name = self.is_prompt_filename(prompt)
                 if file_name != "":
-                    self.add_file_to_content(file_name)
+                    self.llm.add_file_to_content(file_name)
                     continue
 
                 self.process_prompt(prompt)

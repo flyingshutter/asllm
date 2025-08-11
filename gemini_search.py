@@ -1,4 +1,4 @@
-import os, base64
+import os, base64, mimetypes
 from google import genai
 from google.genai import types
 
@@ -46,13 +46,18 @@ class GeminiSearch():
         )]
 
 
-    def add_bytes_to_content(self, role, mime_type, data, bin_data):
+    def add_file_to_content(self, file_name):
+        mime_type = mimetypes.guess_type(file_name)[0]
+        with open(file_name, "rb") as f:
+            encoded_string = base64.b64encode(f.read()).decode('utf-8')
+        with open(file_name, "rb") as f:
+            bin_data = f.read()
+
         self.contents += [types.Content(
-            role=role,
+            role="user",
             parts=[
                 types.Part.from_bytes(
                     mime_type=mime_type,
-                    #data=base64.b64decode(data),
                     data=bin_data,
                 ),
             ],
