@@ -5,10 +5,12 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style      
 from prompt_toolkit.formatted_text import FormattedText as FT                                                                    
+from prompt_toolkit.completion import PathCompleter
 
 from rich.console import Console
 from rich.markdown import Markdown
 
+import os, base64, mimetypes
 import tempfile
 import gemini_search
 
@@ -26,6 +28,7 @@ class AsLlm():
         # set up prompt toolkit
         file_history = FileHistory(f"{tempfile.gettempdir()}/.llm-history")
         self.session = PromptSession(history=file_history)
+        self.completer = PathCompleter()
         self.kb = KeyBindings()
         self.register_keybindings()
         # set up rich console
@@ -105,19 +108,49 @@ class AsLlm():
         return HTML(toolbar_string)
 
 
+    def is_prompt_filename(self, prompt):
+        file_name = ""
+        if os.path.isfile(prompt.strip()):
+            self.console.print("file detected")
+            file_name = prompt.strip()
+        
+        if os.path.isfile(prompt.strip()[1:-1]):
+            self.console.print("file with '' detected")
+            file_name = prompt.strip()[1:-1]
+               
+        return file_name
+
+
+    def add_file_to_content(self, file_name):
+        mime_type = mimetypes.guess_type(file_name)[0]
+        with open(file_name, "rb") as f:
+            encoded_string = base64.b64encode(f.read()).decode('utf-8')
+        with open(file_name, "rb") as f:
+            bin_data = f.read()
+        self.llm.add_bytes_to_content(role="user", mime_type=mime_type, data=encoded_string, bin_data=bin_data) 
+
+
     def run(self):
         while True:
             try:
                 prompt = self.session.prompt(f'prompt> ', 
                                              style=Style.from_dict({'bottom-toolbar': "#1C2B16 bg:#00ff44"}), 
                                              key_bindings=self.kb,
-                                             bottom_toolbar=self.make_bottom_toolbar)
+                                             completer=self.completer,
+                                             complete_while_typing=True,
+                                             bottom_toolbar=self.make_bottom_toolbar,
+                                             )
                 if prompt.strip().lower() in ['exit', 'quit']:
                     break
                 
                 if len(prompt.strip()) == 0:
                     continue
-                
+
+                file_name = self.is_prompt_filename(prompt)
+                if file_name != "":
+                    self.add_file_to_content(file_name)
+                    continue
+
                 self.process_prompt(prompt)
                             
             except (KeyboardInterrupt):

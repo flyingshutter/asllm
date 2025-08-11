@@ -1,4 +1,4 @@
-import os
+import os, base64
 from google import genai
 from google.genai import types
 
@@ -45,7 +45,20 @@ class GeminiSearch():
             ],
         )]
 
-    
+
+    def add_bytes_to_content(self, role, mime_type, data, bin_data):
+        self.contents += [types.Content(
+            role=role,
+            parts=[
+                types.Part.from_bytes(
+                    mime_type=mime_type,
+                    #data=base64.b64decode(data),
+                    data=bin_data,
+                ),
+            ],
+        )]
+
+
     def clear_contents(self):
         self.contents = []
 
