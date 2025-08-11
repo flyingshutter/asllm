@@ -15,7 +15,7 @@ import gemini_search
 help_str="""**Command Line LLM**  
 `<F1>`     Toggle Standard/Short Answer  
 `<F3>`     Toggle Google Search  
-`<Ctrl-y>` Clear Chat History  
+`<Ctrl-q>` Clear Chat History  
 `<Ctrl-d>` Exit   (or type exit)  
 """
 
@@ -48,7 +48,7 @@ class AsLlm():
             print(self.llm.contents)
             print(self.llm.generate_content_config.system_instruction)
 
-        @self.kb.add("c-x")
+        @self.kb.add("c-q")
         def _(event):
             self.chunks = []
             self.llm.clear_contents()
@@ -99,8 +99,8 @@ class AsLlm():
 
 
     def make_bottom_toolbar(self):
-        toolbar_string = f'    {"std  " if self.state == "std" else "short"}       {"google   " if self.state_google else "no google"}             {"chat history empty" if not self.llm.contents else ""}\n'
-        toolbar_string += '<style bg="#aaaaaa">F1: short/std   F3: google on/off     Ctrl-x: clear chat history😀   </style>'
+        toolbar_string = f'    {"std  " if self.state == "std" else "short"}           {"google   " if self.state_google else "no google"}                 {"chat history is empty" if not self.llm.contents else ""}\n'
+        toolbar_string += '<style bg="#aaaaaa">F1: short/std   F3: google on/off     Ctrl-q: clear chat history😀   </style>'
         return HTML(toolbar_string)
 
 
