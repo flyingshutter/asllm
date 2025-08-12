@@ -23,6 +23,15 @@ help_str="""**Command Line LLM**
 
 instruction_dict = { "short": 'answer short and precise, do not explain, just answer the question. If the prompt starts with "exp", give a detailed answer with explanation.', }
 
+allowed_mimetypes = (
+            'text/',
+            'application/pdf',
+            "video/mp4", "video/mpeg", "video/mov", "video/avi", "video/x-flv", "video/mpg", "video/webm", "video/wmv", "video/3gpp",
+            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac",
+
+        )
+
+
 class AsLlm():
     def __init__(self):
         # set up prompt toolkit
@@ -110,12 +119,12 @@ class AsLlm():
 
     def is_prompt_filename(self, prompt):
         if os.path.isfile(prompt.strip()):
-            self.console.print("file detected", end=" | ")
+            #self.console.print("file detected", end=" | ")
             file_name = prompt.strip()
             return file_name
         
         if os.path.isfile(prompt.strip()[1:-1]):
-            self.console.print("file with '' detected", end=" | ")
+            #self.console.print("file with '' detected", end=" | ")
             file_name = prompt.strip()[1:-1]
             return file_name
 
@@ -124,13 +133,21 @@ class AsLlm():
                 win_path = subprocess.run(f"cygpath -w {prompt.strip()}", capture_output=True, text=True).stdout[:-1]
                 
                 if os.path.isfile(win_path):
-                    self.console.print("win file detected", end=" | ")
+                    #self.console.print("win file detected", end=" | ")
                     file_name = prompt.strip()
                     return win_path
             except:
                 pass
 
         return ""
+
+
+    def is_file_allowed(self, mime_type_tuple):
+        if type(mime_type_tuple[0]) == str:
+            for entry in allowed_mimetypes:
+                if entry in mime_type_tuple[0]:
+                    return True
+        return False
 
 
     def run(self):
@@ -151,9 +168,14 @@ class AsLlm():
 
                 file_name = self.is_prompt_filename(prompt)
                 if file_name != "":
-                    print(mimetypes.guess_type(file_name))
-                    self.llm.add_file_to_content(file_name)
-                    continue
+                    mime_type_tuple = mimetypes.guess_type(file_name)
+                    if self.is_file_allowed(mime_type_tuple):
+                        self.console.print(f"[#00ff44]file accepted[/#00ff44]")
+                        self.llm.add_file_to_content(file_name)
+                        continue
+                    else:
+                        self.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {mime_type_tuple[0]}")
+                        continue
 
                 self.process_prompt(prompt)
                             
