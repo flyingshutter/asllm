@@ -29,6 +29,7 @@ instruction_dict = { "short": 'answer short and precise, do not explain, just an
 allowed_mimetypes = (
             'text/',
             'application/pdf',
+            "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif",
             "video/mp4", "video/mpeg", "video/mov", "video/avi", "video/x-flv", "video/mpg", "video/webm", "video/wmv", "video/3gpp",
             "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg",
 
