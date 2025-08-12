@@ -1,4 +1,5 @@
 venv/
+examples/
 __pycache__/
 .env
 *.swp
