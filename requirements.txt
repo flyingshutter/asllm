@@ -1,4 +1,4 @@
-google
+google-genai
 prompt_toolkit
 rich
 
