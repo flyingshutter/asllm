@@ -1,3 +1,6 @@
+################################################################################
+#               https://ai.google.dev/gemini-api/docs                          #
+################################################################################
 import os, base64, mimetypes
 from google import genai
 from google.genai import types

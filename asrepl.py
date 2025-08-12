@@ -1,3 +1,6 @@
+################################################################################
+#               https://ai.google.dev/gemini-api/docs                          #
+################################################################################
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.application import get_app 
