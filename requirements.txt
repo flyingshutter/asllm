@@ -1,0 +1,4 @@
+google
+prompt_toolkit
+rich
+
