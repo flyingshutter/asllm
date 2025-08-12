@@ -10,7 +10,7 @@ from prompt_toolkit.completion import PathCompleter
 from rich.console import Console
 from rich.markdown import Markdown
 
-import os, base64, mimetypes
+import os, sys, subprocess, mimetypes
 import tempfile
 import gemini_search
 
@@ -109,16 +109,28 @@ class AsLlm():
 
 
     def is_prompt_filename(self, prompt):
-        file_name = ""
         if os.path.isfile(prompt.strip()):
-            self.console.print("file detected")
+            self.console.print("file detected", end=" | ")
             file_name = prompt.strip()
+            return file_name
         
         if os.path.isfile(prompt.strip()[1:-1]):
-            self.console.print("file with '' detected")
+            self.console.print("file with '' detected", end=" | ")
             file_name = prompt.strip()[1:-1]
-               
-        return file_name
+            return file_name
+
+        if sys.platform == "win32":
+            try:
+                win_path = subprocess.run(f"cygpath -w {prompt.strip()}", capture_output=True, text=True).stdout[:-1]
+                
+                if os.path.isfile(win_path):
+                    self.console.print("win file detected", end=" | ")
+                    file_name = prompt.strip()
+                    return win_path
+            except:
+                pass
+
+        return ""
 
 
     def run(self):
@@ -139,6 +151,7 @@ class AsLlm():
 
                 file_name = self.is_prompt_filename(prompt)
                 if file_name != "":
+                    print(mimetypes.guess_type(file_name))
                     self.llm.add_file_to_content(file_name)
                     continue
 

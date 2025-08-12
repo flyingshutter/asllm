@@ -1,7 +1,7 @@
 import os, base64, mimetypes
 from google import genai
 from google.genai import types
-
+from google.genai.errors import ClientError
 
 class GeminiSearch():
     def __init__(self):
@@ -71,13 +71,12 @@ class GeminiSearch():
     def generate(self, user_prompt):
         self.add_content(role="user", text=user_prompt)
         
-        for chunk in self.client.models.generate_content_stream(
-            model=self.model,
-            contents=self.contents,
-            config=self.config,
-        ):  
-            yield chunk
-        
+        try:
+            for chunk in self.client.models.generate_content_stream(model=self.model, contents=self.contents, config=self.config):  
+               yield chunk
+        except ClientError as e:
+            print(e)
+
 
 
 if __name__ == "__main__":
