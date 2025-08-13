@@ -11,17 +11,28 @@ class GeminiSearch():
         self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
         self.system_instruction = [types.Part.from_text(text="")]
-        self.tools = [types.Tool(googleSearch=types.GoogleSearch())]
+        #self.tools = [types.Tool(googleSearch=types.GoogleSearch())]
+        self.tool_state = {"url_context":True, "google_search":True}
         self.make_config()
 
         self.model = "gemini-2.5-flash"
         self.contents = []
 
 
+    def make_tool_list(self):
+        tools = []
+        if self.tool_state['url_context']:
+            tools += [types.Tool(url_context=types.UrlContext())]
+        if self.tool_state['google_search']:
+            tools += [types.Tool(googleSearch=types.GoogleSearch())]
+
+        return tools
+
+
     def make_config(self):
         self.config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=0),
-            tools=self.tools,
+            tools=self.make_tool_list(),
             system_instruction=self.system_instruction,
             response_mime_type="text/plain",
         )
@@ -32,14 +43,11 @@ class GeminiSearch():
         self.make_config()
  
 
-    def switch_google_search(self, state):
-        if state:
-            self.tools = [types.Tool(googleSearch=types.GoogleSearch())]
-        else:
-            self.tools = []
+    def toggle_tool(self, name):
+        self.tool_state[name] = not self.tool_state[name]
         self.make_config()
 
-        
+
     def add_content(self, role, text):
         self.contents += [types.Content(
             role=role,
