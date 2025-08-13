@@ -114,7 +114,7 @@ class AsLlm():
         self.console.print("\r[on #003300]" + " " * (self.console.width - num_dots) + "[/on #003300]")
         self.console.print(Markdown(model_output))
         
-        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in grounding_links]
+        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in grounding_chunks]
         link_string = " ".join(link_list)
         self.console.print(Markdown(link_string))
 
