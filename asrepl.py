@@ -92,6 +92,7 @@ class AsLlm():
     def process_prompt(self, prompt):        
         model_output = ""
         grounding_chunks = []
+        url_metadata = []
         num_dots = 0
         for chunk in self.llm.generate(prompt):
             self.chunks += chunk
@@ -102,13 +103,22 @@ class AsLlm():
                 if chunk.candidates[0].grounding_metadata.grounding_chunks:
                     grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
             
+            if self.llm.tool_state['url_context']:
+                if chunk.candidates[0].url_context_metadata:
+                    if chunk.candidates[0].url_context_metadata.url_metadata:
+                        url_metadata += chunk.candidates[0].url_context_metadata.url_metadata
+            
             self.console.print("\r[on #003300]" + " ", end="")
             num_dots += 1
 
         self.console.print("\r[on #003300]" + " " * (self.console.width - num_dots) + "[/on #003300]")
         self.console.print(Markdown(model_output))
         
-        link_list = [f"[{chunk.web.title}]({chunk.web.uri}) " for chunk in grounding_chunks]
+        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in grounding_links]
+        link_string = " ".join(link_list)
+        self.console.print(Markdown(link_string))
+
+        link_list = [f"[{entry.retrieved_url}]({entry.retrieved_url}) " for entry in url_metadata]
         link_string = " ".join(link_list)
         self.console.print(Markdown(link_string))
 
