@@ -18,7 +18,7 @@ import tempfile
 import gemini_search
 
 help_str="""**Command Line LLM**  
-`<F1>`     Toggle Standard/Short Answer  
+`<F2>`     Toggle Standard/Short Answer  
 `<F3>`     Toggle Google Search  
 `<F4>`     Toggle Url Context  
 `<Ctrl-q>` Clear Chat History  
@@ -71,7 +71,7 @@ class AsLlm():
             self.chunks = []
             self.llm.clear_contents()
 
-        @self.kb.add("f1")
+        @self.kb.add("f2")
         def _(event):
             if self.state == "short":
                 self.state = "std"
@@ -126,8 +126,8 @@ class AsLlm():
 
 
     def make_bottom_toolbar(self):
-        toolbar_string = f'    {"std  " if self.state == "std" else "short"}           {"google   " if self.llm.tool_state["google_search"] else "no google"}           {"url context   "  if self.llm.tool_state["url_context"] else "no url context"}          {"chat history is empty" if not self.llm.contents else ""}\n'
-        toolbar_string += '<style bg="#aaaaaa">F1: short/std   F3: google on/off   F4: url context on/off   Ctrl-q: clear chat history😀   </style>'
+        toolbar_string = f'  {"std  " if self.state == "std" else "short"}   {"google   " if self.llm.tool_state["google_search"] else "no google"}   {"url context   "  if self.llm.tool_state["url_context"] else "no url context"}   {"chat is empty" if not self.llm.contents else "has history"}\n'
+        toolbar_string += '<style bg="#aaaaaa">  F2      F3          F4               Ctrl-q   </style>'
         return HTML(toolbar_string)
 
 
