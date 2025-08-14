@@ -108,10 +108,10 @@ class AsLlm():
                     if chunk.candidates[0].url_context_metadata.url_metadata:
                         url_metadata += chunk.candidates[0].url_context_metadata.url_metadata
             
-            self.console.print("\r[on #003300]" + " ", end="")
+            self.console.print("\r[#00ff00]" + "-", end="")
             num_dots += 1
 
-        self.console.print("\r[on #003300]" + " " * (self.console.width - num_dots) + "[/on #003300]")
+        self.console.print("\r[#00ff00]" + "-" * (self.console.width - num_dots) + "[/#00ff00]")
         self.console.print(Markdown(model_output))
         
         link_list = [f"[{link.web.title}]({link.web.uri}) " for link in grounding_chunks]
