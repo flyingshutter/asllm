@@ -200,12 +200,16 @@ class AsLlm():
                 break
 
 
-if __name__ == '__main__':
-    if len(sys.argv) == 1:
+def main(argv):
+    if len(argv) == 1:
         AsLlm().run()
     else:
-        _, *prompt = sys.argv
+        _, *prompt = argv
         prompt = " ".join(prompt)
         a = AsLlm()
         a.console.print(prompt)
         a.process_prompt(prompt)
+
+
+if __name__ == '__main__':
+    main(sys.argv)
