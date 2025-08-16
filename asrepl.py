@@ -97,13 +97,13 @@ class AsLlm():
                 model_output += chunk.text
             
             if self.llm.tool_state['google_search']:
-                if chunk.candidates[0].grounding_metadata.grounding_chunks:
+                # if chunk.candidates[0].grounding_metadata.grounding_chunks:
+                if chunk.candidates and chunk.candidates[0].grounding_metadata and chunk.candidates[0].grounding_metadata.grounding_chunks:
                     grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
             
             if self.llm.tool_state['url_context']:
-                if chunk.candidates[0].url_context_metadata:
-                    if chunk.candidates[0].url_context_metadata.url_metadata:
-                        url_metadata += chunk.candidates[0].url_context_metadata.url_metadata
+                if chunk.candidates and chunk.candidates[0].url_context_metadata and chunk.candidates[0].url_context_metadata.url_metadata:
+                    url_metadata += chunk.candidates[0].url_context_metadata.url_metadata
             
             self.console.print("\r[#00ff00]" + "-", end="")
             num_dots += 1
