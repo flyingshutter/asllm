@@ -86,11 +86,10 @@ class AsLlm():
             self.llm.toggle_tool("url_context")
 
 
-    def process_prompt(self, prompt):        
+    def ask_llm(self, prompt):        
         model_output = ""
         grounding_chunks = []
         url_metadata = []
-        num_dots = 0
         for chunk in self.llm.generate(prompt):
             self.chunks += chunk
             if type(chunk.text)==str:
@@ -104,22 +103,33 @@ class AsLlm():
             if self.llm.tool_state['url_context']:
                 if chunk.candidates and chunk.candidates[0].url_context_metadata and chunk.candidates[0].url_context_metadata.url_metadata:
                     url_metadata += chunk.candidates[0].url_context_metadata.url_metadata
-            
+
+            yield {
+                "model_output":model_output,
+                "grounding_chunks":grounding_chunks,
+                "url_metadata":url_metadata
+                }
+
+
+    def process_prompt(self, prompt):        
+        num_dots = 0
+        res = {}
+        for res in self.ask_llm(prompt):
             self.console.print("\r[#00ff00]" + "-", end="")
             num_dots += 1
 
         self.console.print("\r[#00ff00]" + "-" * (self.console.width - num_dots) + "[/#00ff00]")
-        self.console.print(Markdown(model_output))
+        self.console.print(Markdown(res["model_output"]))
         
-        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in grounding_chunks]
+        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in res["grounding_chunks"]]
         link_string = " ".join(link_list)
         self.console.print(Markdown(link_string))
 
-        link_list = [f"[{entry.retrieved_url}]({entry.retrieved_url}) " for entry in url_metadata]
+        link_list = [f"[{entry.retrieved_url}]({entry.retrieved_url}) " for entry in res["url_metadata"]]
         link_string = " ".join(link_list)
         self.console.print(Markdown(link_string))
 
-        self.llm.add_content(role="model", text=model_output)
+        self.llm.add_content(role="model", text=res["model_output"])
 
 
     def make_bottom_toolbar(self):
