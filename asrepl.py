@@ -53,8 +53,6 @@ class AsLlm():
         self.state_google = "google"
         self.chunks = []
 
-        self.console.print(Markdown(help_str))
-
 
     def register_keybindings(self):
         @self.kb.add('f10')
@@ -165,6 +163,8 @@ class AsLlm():
 
 
     def run(self):
+        self.console.print(Markdown(help_str))
+        
         while True:
             try:
                 prompt = self.session.prompt(f'prompt> ', 
@@ -201,4 +201,11 @@ class AsLlm():
 
 
 if __name__ == '__main__':
-    AsLlm().run()
+    if len(sys.argv) == 1:
+        AsLlm().run()
+    else:
+        _, *prompt = sys.argv
+        prompt = " ".join(prompt)
+        a = AsLlm()
+        a.console.print(prompt)
+        a.process_prompt(prompt)
