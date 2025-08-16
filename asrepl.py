@@ -117,19 +117,22 @@ class AsLlm():
         for res in self.ask_llm(prompt):
             self.console.print("\r[#00ff00]" + "-", end="")
             num_dots += 1
-
         self.console.print("\r[#00ff00]" + "-" * (self.console.width - num_dots) + "[/#00ff00]")
-        self.console.print(Markdown(res["model_output"]))
-        
-        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in res["grounding_chunks"]]
+        self.print_result(res)
+
+
+    def print_result(self, result):
+        self.console.print(Markdown(result["model_output"]))
+
+        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in result["grounding_chunks"]]
         link_string = " ".join(link_list)
         self.console.print(Markdown(link_string))
 
-        link_list = [f"[{entry.retrieved_url}]({entry.retrieved_url}) " for entry in res["url_metadata"]]
+        link_list = [f"[{entry.retrieved_url}]({entry.retrieved_url}) " for entry in result["url_metadata"]]
         link_string = " ".join(link_list)
         self.console.print(Markdown(link_string))
 
-        self.llm.add_content(role="model", text=res["model_output"])
+        self.llm.add_content(role="model", text=result["model_output"])
 
 
     def make_bottom_toolbar(self):
@@ -216,8 +219,11 @@ def main(argv):
         _, *prompt = argv
         prompt = " ".join(prompt)
         a = AsLlm()
-        a.console.print(prompt)
-        a.process_prompt(prompt)
+
+        res = {}
+        for res in a.ask_llm(prompt):
+            pass
+        a.print_result(res)
 
 
 if __name__ == '__main__':
