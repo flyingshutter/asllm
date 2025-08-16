@@ -24,7 +24,7 @@ class GeminiSearch():
         if self.tool_state['url_context']:
             tools += [types.Tool(url_context=types.UrlContext())]
         if self.tool_state['google_search']:
-            tools += [types.Tool(googleSearch=types.GoogleSearch())]
+            tools += [types.Tool(google_search=types.GoogleSearch())]
 
         return tools
 

@@ -62,7 +62,6 @@ class AsLlm():
         @self.kb.add('f12')
         def _(event):
             print(self.llm.contents)
-            print(self.llm.generate_content_config.system_instruction)
 
         @self.kb.add("c-q")
         def _(event):
