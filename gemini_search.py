@@ -12,7 +12,7 @@ class GeminiSearch():
 
         self.system_instruction = [types.Part.from_text(text="")]
         #self.tools = [types.Tool(googleSearch=types.GoogleSearch())]
-        self.tool_state = {"url_context":True, "google_search":True}
+        self.tools_state = {"url_context":True, "google_search":True}
         self.make_config()
 
         self.model = "gemini-2.5-flash"
@@ -21,9 +21,9 @@ class GeminiSearch():
 
     def make_tool_list(self):
         tools = []
-        if self.tool_state['url_context']:
+        if self.tools_state['url_context']:
             tools += [types.Tool(url_context=types.UrlContext())]
-        if self.tool_state['google_search']:
+        if self.tools_state['google_search']:
             tools += [types.Tool(google_search=types.GoogleSearch())]
 
         return tools
@@ -39,12 +39,12 @@ class GeminiSearch():
 
 
     def update_system_instruction(self, instruction):
-        self.system_instruction = [types.Part.from_text(text=instruction)]    
+        self.system_instruction = [types.Part.from_text(text=instruction)]
         self.make_config()
  
 
-    def toggle_tool(self, name):
-        self.tool_state[name] = not self.tool_state[name]
+    def set_tool_state(self, tool_name, set_active):
+        self.tools_state[tool_name] = set_active
         self.make_config()
 
 
@@ -87,7 +87,6 @@ class GeminiSearch():
                yield chunk
         except ClientError as e:
             print(e)
-
 
 
 if __name__ == "__main__":
