@@ -40,9 +40,6 @@ allowed_mimetypes = (
 class Llm:
     def __init__(self) -> None:
         self.gemini = gemini_search.GeminiSearch()
-        # self.long_answer = True
-        # self._use_google_search_tool = True
-        # self._use_url_context_tool = True
 
 
     @property
@@ -90,7 +87,6 @@ class Llm:
                 model_output += chunk.text
 
             if self.gemini.tools_state['google_search']:
-                # if chunk.candidates[0].grounding_metadata.grounding_chunks:
                 if chunk.candidates and chunk.candidates[0].grounding_metadata and chunk.candidates[0].grounding_metadata.grounding_chunks:
                     grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
 
@@ -177,16 +173,8 @@ class ReplController:
         self.view.register_keybindings()
 
 
-    def clear_contents(self):
-        self.llm.gemini.clear_contents()
-
-
-    # def toggle_google_search(self):
-    #     self.llm.use_google_search_tool = not self.llm.use_google_search_tool
-    #
-    #
-    # def toggle_url_context(self):
-    #     self.llm.use_url_context_tool = not self.llm.use_url_context_tool
+    # def clear_contents(self):
+    #     self.llm.gemini.clear_contents()
 
 
     def is_prompt_filename(self, prompt):
@@ -232,7 +220,6 @@ class ReplController:
         self.view.printer.console.print("\r[#00ff00]" + "-" * (self.view.printer.console.width - num_dots) + "[/#00ff00]")
         self.view.printer.print_result(result)
         self.llm.gemini.add_content(role="model", text=result["model_output"])
-        # self.model.has_history = True
 
 
     def run_once(self, prompt):
