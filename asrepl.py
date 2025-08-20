@@ -3,11 +3,9 @@
 ################################################################################
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.application import get_app 
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.styles import Style      
-from prompt_toolkit.formatted_text import FormattedText as FT                                                                    
+from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import PathCompleter
 
 from rich.console import Console
@@ -72,10 +70,10 @@ class AsLlm():
         def _(event):
             if self.state == "short":
                 self.state = "std"
-                self.llm.update_system_instruction("")
+                self.llm.system_instruction = ""
             else:
                 self.state = "short"
-                self.llm.update_system_instruction(instruction_dict["short"])
+                self.llm.system_instruction = instruction_dict["short"]
 
         @self.kb.add("f3")
         def _(event):
@@ -86,7 +84,7 @@ class AsLlm():
             self.llm.tools_state["url_context"] = not self.llm.tools_state["url_context"]
 
 
-    def ask_llm(self, prompt):        
+    def ask_llm(self, prompt):
         model_output = ""
         grounding_chunks = []
         url_metadata = []
@@ -94,12 +92,12 @@ class AsLlm():
             self.chunks += chunk
             if type(chunk.text)==str:
                 model_output += chunk.text
-            
+
             if self.llm.tools_state['google_search']:
                 # if chunk.candidates[0].grounding_metadata.grounding_chunks:
                 if chunk.candidates and chunk.candidates[0].grounding_metadata and chunk.candidates[0].grounding_metadata.grounding_chunks:
                     grounding_chunks += chunk.candidates[0].grounding_metadata.grounding_chunks
-            
+
             if self.llm.tools_state['url_context']:
                 if chunk.candidates and chunk.candidates[0].url_context_metadata and chunk.candidates[0].url_context_metadata.url_metadata:
                     url_metadata += chunk.candidates[0].url_context_metadata.url_metadata
@@ -111,7 +109,7 @@ class AsLlm():
                 }
 
 
-    def process_prompt(self, prompt):        
+    def process_prompt(self, prompt):
         num_dots = 0
         res = {}
         for res in self.ask_llm(prompt):
@@ -146,7 +144,7 @@ class AsLlm():
             #self.console.print("file detected", end=" | ")
             file_name = prompt.strip()
             return file_name
-        
+
         if os.path.isfile(prompt.strip()[1:-1]):
             #self.console.print("file with '' detected", end=" | ")
             file_name = prompt.strip()[1:-1]
@@ -155,7 +153,7 @@ class AsLlm():
         if sys.platform == "win32":
             try:
                 win_path = subprocess.run(f"cygpath -w {prompt.strip()}", capture_output=True, text=True).stdout[:-1]
-                
+
                 if os.path.isfile(win_path):
                     #self.console.print("win file detected", end=" | ")
                     file_name = prompt.strip()
@@ -176,11 +174,11 @@ class AsLlm():
 
     def run(self):
         self.console.print(Markdown(help_str))
-        
+
         while True:
             try:
-                prompt = self.session.prompt(f'prompt> ', 
-                                             style=Style.from_dict({'bottom-toolbar': "#1C2B16 bg:#00ff44"}), 
+                prompt = self.session.prompt(f'prompt> ',
+                                             style=Style.from_dict({'bottom-toolbar': "#1C2B16 bg:#00ff44"}),
                                              key_bindings=self.kb,
                                              completer=self.completer,
                                              complete_while_typing=True,
@@ -188,7 +186,7 @@ class AsLlm():
                                              )
                 if prompt.strip().lower() in ['exit', 'quit']:
                     break
-                
+
                 if len(prompt.strip()) == 0:
                     continue
 
@@ -204,7 +202,7 @@ class AsLlm():
                         continue
 
                 self.process_prompt(prompt)
-                            
+
             except (KeyboardInterrupt):
                 continue
 
