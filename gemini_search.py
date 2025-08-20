@@ -6,15 +6,25 @@ from google import genai
 from google.genai import types
 from google.genai.errors import ClientError
 
+
 class GeminiSearch():
     def __init__(self):
         self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        self.system_instruction = [types.Part.from_text(text="")]
+        self._system_instruction = [types.Part.from_text(text="")]
         self.tools_state = {"url_context":True, "google_search":True}
 
         self.model = "gemini-2.5-flash"
         self.contents = []
+
+
+    @property
+    def system_instruction(self):
+        return self._system_instruction[0].text
+
+    @system_instruction.setter
+    def system_instruction(self, text):
+        self._system_instruction = [types.Part.from_text(text=text)]
 
 
     def make_tool_list(self):
@@ -31,15 +41,11 @@ class GeminiSearch():
         config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=0),
             tools=self.make_tool_list(),
-            system_instruction=self.system_instruction,
+            system_instruction=self._system_instruction,
             response_mime_type="text/plain",
         )
         return config
 
-
-    def update_system_instruction(self, instruction):
-        self.system_instruction = [types.Part.from_text(text=instruction)]
- 
 
     def set_tool_state(self, tool_name, set_active):
         self.tools_state[tool_name] = set_active

@@ -5,7 +5,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.styles import Style      
+from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import PathCompleter
 
 from rich.console import Console
@@ -25,7 +25,8 @@ help_str="""**Command Line LLM**
 `<Ctrl-d>` Exit   (or type exit)  
 """
 
-instruction_dict = { "short": 'answer short and precise, do not explain, just answer the question. If the prompt starts with "exp", give a detailed answer with explanation.', }
+instruction_dict = { "short": 'answer short and precise, do not explain, just answer the question. If the prompt starts with "exp", give a detailed answer with explanation.',
+                    "long": ""}
 
 allowed_mimetypes = (
             'text/',
@@ -39,6 +40,45 @@ allowed_mimetypes = (
 class Llm:
     def __init__(self) -> None:
         self.gemini = gemini_search.GeminiSearch()
+        # self.long_answer = True
+        # self._use_google_search_tool = True
+        # self._use_url_context_tool = True
+
+
+    @property
+    def give_long_answer(self):
+        return self.gemini.system_instruction == instruction_dict["long"]
+
+    @give_long_answer.setter
+    def give_long_answer(self, long_answer_enabled):
+        key = "long" if long_answer_enabled else "short"
+        self.gemini.system_instruction = instruction_dict[key]
+
+
+    @property
+    def use_url_context_tool(self):
+        return self.gemini.tools_state["url_context"]
+
+    @use_url_context_tool.setter
+    def use_url_context_tool(self, value):
+        self.gemini.tools_state["url_context"] = value
+
+
+    @property
+    def use_google_search_tool(self):
+        return self.gemini.tools_state["google_search"]
+
+    @use_google_search_tool.setter
+    def use_google_search_tool(self, value):
+        self.gemini.tools_state["google_search"] = value
+
+
+    def has_history(self):
+        return self.gemini.contents != []
+
+
+    def clear_history(self):
+        self.gemini.clear_contents()
 
 
     def ask_llm(self, prompt):
@@ -65,16 +105,6 @@ class Llm:
                 }
 
 
-class Model:
-    def __init__(self):
-        self.answer_type = "std"
-        self.tool_switches = {
-            "google_search" : True,
-            "url_context" : True,
-        }
-        self.has_history = False
-
-
 class RichPrinter:
     def __init__(self) -> None:
         self.console = Console()
@@ -93,38 +123,39 @@ class RichPrinter:
 
 
 class View:
-    def __init__(self, model) -> None:
-        self.model = model
+    def __init__(self, llm: Llm) -> None:
+        self.llm = llm
 
         # set up prompt toolkit
         file_history = FileHistory(f"{tempfile.gettempdir()}/.llm-history")
         self.session = PromptSession(history=file_history)
         self.completer = PathCompleter()
         self.kb = KeyBindings()
-        
+
         self.printer = RichPrinter()
 
-    def register_keybindings(self, controller):
+    def register_keybindings(self):
         @self.kb.add("c-q")
         def _(event):
-            controller.clear_contents()
+            self.llm.gemini.clear_contents()
 
         @self.kb.add("f2")
         def _(event):
-            controller.toggle_system_instruction()
+            self.llm.give_long_answer = not self.llm.give_long_answer
+
 
         @self.kb.add("f3")
         def _(event):
-            controller.toggle_tool_switch("google_search")
+            self.llm.use_google_search_tool = not self.llm.use_google_search_tool
 
         @self.kb.add("f4")
         def _(event):
-            controller.toggle_tool_switch("url_context")
+            self.llm.use_url_context_tool = not self.llm.use_url_context_tool
 
 
     def get_user_input(self):
-        prompt = self.session.prompt(f'prompt> ', 
-                                     style=Style.from_dict({'bottom-toolbar': "#1C2B16 bg:#00ff44"}), 
+        prompt = self.session.prompt(f'prompt> ',
+                                     style=Style.from_dict({'bottom-toolbar': "#1C2B16 bg:#00ff44"}),
                                      key_bindings=self.kb,
                                      completer=self.completer,
                                      complete_while_typing=True,
@@ -134,36 +165,28 @@ class View:
 
 
     def make_bottom_toolbar(self):
-        toolbar_string = f'  {"std  " if self.model.answer_type == "std" else "short"}   {"google   " if self.model.tool_switches["google_search"] else "no google"}   {"url context   "  if self.model.tool_switches["url_context"] else "no url context"}   {"has history" if self.model.has_history else "chat is empty"}\n'
+        toolbar_string = f'  {"std  " if self.llm.give_long_answer else "short"}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history" if self.llm.has_history() else "chat is empty"}\n'
         toolbar_string += '<style bg="#aaaaaa">  F2      F3          F4               Ctrl-q   </style>'
         return HTML(toolbar_string)
 
 
 class ReplController:
     def __init__(self):
-        self.model = Model()
-        self.view = View(self.model)
-        self.view.register_keybindings(self)
         self.llm = Llm()
-
-
-    def toggle_system_instruction(self):
-        if self.model.answer_type == "short":
-            self.model.answer_type = "std"
-            self.llm.gemini.update_system_instruction("")
-        else:
-            self.model.answer_type = "short"
-            self.llm.gemini.update_system_instruction(instruction_dict["short"])
+        self.view = View(self.llm)
+        self.view.register_keybindings()
 
 
     def clear_contents(self):
         self.llm.gemini.clear_contents()
-        self.model.has_history = False
 
 
-    def toggle_tool_switch(self, tool_name):
-        self.model.tool_switches[tool_name] = not self.model.tool_switches[tool_name] 
-        self.llm.gemini.set_tool_state(tool_name, self.model.tool_switches[tool_name])
+    # def toggle_google_search(self):
+    #     self.llm.use_google_search_tool = not self.llm.use_google_search_tool
+    #
+    #
+    # def toggle_url_context(self):
+    #     self.llm.use_url_context_tool = not self.llm.use_url_context_tool
 
 
     def is_prompt_filename(self, prompt):
@@ -209,7 +232,7 @@ class ReplController:
         self.view.printer.console.print("\r[#00ff00]" + "-" * (self.view.printer.console.width - num_dots) + "[/#00ff00]")
         self.view.printer.print_result(result)
         self.llm.gemini.add_content(role="model", text=result["model_output"])
-        self.model.has_history = True
+        # self.model.has_history = True
 
 
     def run_once(self, prompt):
