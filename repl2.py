@@ -75,6 +75,23 @@ class Model:
         self.has_history = False
 
 
+class RichPrinter:
+    def __init__(self) -> None:
+        self.console = Console()
+
+
+    def print_result(self, result):
+        self.console.print(Markdown(result["model_output"]))
+
+        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in result["grounding_chunks"]]
+        link_string = " ".join(link_list)
+        self.console.print(Markdown(link_string))
+
+        link_list = [f"[{entry.retrieved_url}]({entry.retrieved_url}) " for entry in result["url_metadata"]]
+        link_string = " ".join(link_list)
+        self.console.print(Markdown(link_string))
+
+
 class View:
     def __init__(self, model) -> None:
         self.model = model
@@ -84,9 +101,8 @@ class View:
         self.session = PromptSession(history=file_history)
         self.completer = PathCompleter()
         self.kb = KeyBindings()
-        # set up rich console
-        self.console = Console()
-
+        
+        self.printer = RichPrinter()
 
     def register_keybindings(self, controller):
         @self.kb.add("c-q")
@@ -121,19 +137,6 @@ class View:
         toolbar_string = f'  {"std  " if self.model.answer_type == "std" else "short"}   {"google   " if self.model.tool_switches["google_search"] else "no google"}   {"url context   "  if self.model.tool_switches["url_context"] else "no url context"}   {"has history" if self.model.has_history else "chat is empty"}\n'
         toolbar_string += '<style bg="#aaaaaa">  F2      F3          F4               Ctrl-q   </style>'
         return HTML(toolbar_string)
-
-
-    def print_result(self, result):
-        self.console.print(Markdown(result["model_output"]))
-
-        link_list = [f"[{link.web.title}]({link.web.uri}) " for link in result["grounding_chunks"]]
-        link_string = " ".join(link_list)
-        self.console.print(Markdown(link_string))
-
-        link_list = [f"[{entry.retrieved_url}]({entry.retrieved_url}) " for entry in result["url_metadata"]]
-        link_string = " ".join(link_list)
-        self.console.print(Markdown(link_string))
-
 
 
 class Controller:
@@ -200,16 +203,17 @@ class Controller:
         num_dots = 0
         result = {}
         for result in self.llm.ask_llm(prompt):
-            self.view.console.print("\r[#00ff00]" + "-", end="")
+            self.view.printer.console.print("\r[#00ff00]" + "-", end="")
+
             num_dots += 1
-        self.view.console.print("\r[#00ff00]" + "-" * (self.view.console.width - num_dots) + "[/#00ff00]")
-        self.view.print_result(result)
+        self.view.printer.console.print("\r[#00ff00]" + "-" * (self.view.printer.console.width - num_dots) + "[/#00ff00]")
+        self.view.printer.print_result(result)
         self.llm.gemini.add_content(role="model", text=result["model_output"])
         self.model.has_history = True
 
 
     def run(self):
-        self.view.console.print(Markdown(help_str))
+        self.view.printer.console.print(Markdown(help_str))
 
         while True:
             try:
@@ -225,11 +229,11 @@ class Controller:
                 if file_name != "":
                     mime_type_tuple = mimetypes.guess_type(file_name)
                     if self.is_file_allowed(mime_type_tuple):
-                        self.view.console.print(f"[#00ff44]file accepted[/#00ff44]")
+                        self.view.printer.console.print(f"[#00ff44]file accepted[/#00ff44]")
                         self.llm.gemini.add_file_to_content(file_name)
                         continue
                     else:
-                        self.view.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {mime_type_tuple[0]}")
+                        self.view.printer.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {mime_type_tuple[0]}")
                         continue
 
                 self.process_prompt(prompt)
