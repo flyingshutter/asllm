@@ -80,12 +80,10 @@ class AsLlm():
         @self.kb.add("f3")
         def _(event):
             self.llm.tools_state["google_search"] = not self.llm.tools_state["google_search"]
-            self.llm.make_config()
 
         @self.kb.add("f4")
         def _(event):
             self.llm.tools_state["url_context"] = not self.llm.tools_state["url_context"]
-            self.llm.make_config()
 
 
     def ask_llm(self, prompt):        

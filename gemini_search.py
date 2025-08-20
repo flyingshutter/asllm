@@ -11,9 +11,7 @@ class GeminiSearch():
         self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
         self.system_instruction = [types.Part.from_text(text="")]
-        #self.tools = [types.Tool(googleSearch=types.GoogleSearch())]
         self.tools_state = {"url_context":True, "google_search":True}
-        self.make_config()
 
         self.model = "gemini-2.5-flash"
         self.contents = []
@@ -30,22 +28,21 @@ class GeminiSearch():
 
 
     def make_config(self):
-        self.config = types.GenerateContentConfig(
+        config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=0),
             tools=self.make_tool_list(),
             system_instruction=self.system_instruction,
             response_mime_type="text/plain",
         )
+        return config
 
 
     def update_system_instruction(self, instruction):
         self.system_instruction = [types.Part.from_text(text=instruction)]
-        self.make_config()
  
 
     def set_tool_state(self, tool_name, set_active):
         self.tools_state[tool_name] = set_active
-        self.make_config()
 
 
     def add_content(self, role, text):
@@ -83,7 +80,7 @@ class GeminiSearch():
         self.add_content(role="user", text=user_prompt)
         
         try:
-            for chunk in self.client.models.generate_content_stream(model=self.model, contents=self.contents, config=self.config):  
+            for chunk in self.client.models.generate_content_stream(model=self.model, contents=self.contents, config=self.make_config()):  
                yield chunk
         except ClientError as e:
             print(e)
