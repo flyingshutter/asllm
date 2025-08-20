@@ -139,10 +139,10 @@ class View:
         return HTML(toolbar_string)
 
 
-class Controller:
-    def __init__(self, model, view):
-        self.model = model
-        self.view = view
+class ReplController:
+    def __init__(self):
+        self.model = Model()
+        self.view = View(self.model)
         self.view.register_keybindings(self)
         self.llm = Llm()
 
@@ -212,6 +212,13 @@ class Controller:
         self.model.has_history = True
 
 
+    def run_once(self, prompt):
+        result = {}
+        for result in self.llm.ask_llm(prompt):
+            pass
+        self.view.printer.print_result(result)
+
+
     def run(self):
         self.view.printer.console.print(Markdown(help_str))
 
@@ -245,13 +252,16 @@ class Controller:
                 break
 
 
-def main():
-    model = Model()
-    view = View(model)
-    controller = Controller(model, view)
-    controller.run()
+def main(argv):
+    controller = ReplController()
+    if len(argv) == 1:
+        controller.run()
+    else:
+        _, *prompt = argv
+        prompt = " ".join(prompt)
+        controller.run_once(prompt)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
 
