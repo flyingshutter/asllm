@@ -89,19 +89,19 @@ class View:
 
 
     def register_keybindings(self, controller):
-        @view.kb.add("c-q")
+        @self.kb.add("c-q")
         def _(event):
             controller.clear_contents()
 
-        @view.kb.add("f2")
+        @self.kb.add("f2")
         def _(event):
             controller.toggle_system_instruction()
 
-        @view.kb.add("f3")
+        @self.kb.add("f3")
         def _(event):
             controller.toggle_tool_switch("google_search")
 
-        @view.kb.add("f4")
+        @self.kb.add("f4")
         def _(event):
             controller.toggle_tool_switch("url_context")
 
@@ -118,7 +118,7 @@ class View:
 
 
     def make_bottom_toolbar(self):
-        toolbar_string = f'  {"std  " if model.answer_type == "std" else "short"}   {"google   " if model.tool_switches["google_search"] else "no google"}   {"url context   "  if model.tool_switches["url_context"] else "no url context"}   {"has history" if model.has_history else "chat is empty"}\n'
+        toolbar_string = f'  {"std  " if self.model.answer_type == "std" else "short"}   {"google   " if self.model.tool_switches["google_search"] else "no google"}   {"url context   "  if self.model.tool_switches["url_context"] else "no url context"}   {"has history" if self.model.has_history else "chat is empty"}\n'
         toolbar_string += '<style bg="#aaaaaa">  F2      F3          F4               Ctrl-q   </style>'
         return HTML(toolbar_string)
 
@@ -145,11 +145,11 @@ class Controller:
 
 
     def toggle_system_instruction(self):
-        if model.answer_type == "short":
-            model.answer_type = "std"
+        if self.model.answer_type == "short":
+            self.model.answer_type = "std"
             self.llm.gemini.update_system_instruction("")
         else:
-            model.answer_type = "short"
+            self.model.answer_type = "short"
             self.llm.gemini.update_system_instruction(instruction_dict["short"])
 
 
@@ -213,7 +213,7 @@ class Controller:
 
         while True:
             try:
-                prompt = view.get_user_input()
+                prompt = self.view.get_user_input()
 
                 if prompt.strip().lower() in ['exit', 'quit']:
                     break
@@ -241,9 +241,13 @@ class Controller:
                 break
 
 
-
-if __name__ == "__main__":
+def main():
     model = Model()
     view = View(model)
     controller = Controller(model, view)
     controller.run()
+
+
+if __name__ == "__main__":
+    main()
+
