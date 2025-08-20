@@ -84,7 +84,7 @@ class GeminiSearch():
 
     def generate(self, user_prompt):
         self.add_content(role="user", text=user_prompt)
-        
+
         try:
             for chunk in self.client.models.generate_content_stream(model=self.model, contents=self.contents, config=self.make_config()):  
                yield chunk
@@ -96,4 +96,4 @@ if __name__ == "__main__":
     llm = GeminiSearch()
     for chunk in llm.generate("hi"):
         print(chunk.text)
-    
+
