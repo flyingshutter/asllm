@@ -29,27 +29,29 @@ help_str=r"""**Command Line LLM**
 class Llm:
     def __init__(self) -> None:
         self.gemini = gemini_search.GeminiSearch()
-        self._current_index = 0
-        self._config_list = [{"name":"std", "instruction":''},
-                            {"name":"short", "instruction":'answer short and precise, do not explain, just answer the question. If the prompt starts with }exp", give a detailed answer with explanation.'},
+        self._current_instruction_index = 0
+        self._instruction_list = [{"name":"std", "instruction":''},
+                            {"name":"short", "instruction":'answer short and precise, do not explain, just answer the question. If the prompt starts with "exp", give a detailed answer with explanation.'},
                             {"name":"custom", "instruction":''}]
 
     @property
-    def active_config(self):
-        return self._config_list[self._current_index]
+    def active_instruction(self):
+        return self._instruction_list[self._current_instruction_index]
 
     def next(self):
-        self._current_index = (self._current_index + 1) % len(self._config_list)
-        self.gemini.system_instruction = self.active_config["instruction"]
-        return self.active_config
+        self._current_instruction_index = (self._current_instruction_index + 1) % len(self._instruction_list)
+        self.gemini.system_instruction = self.active_instruction["instruction"]
+        return self.active_instruction
 
     def set_custom_instruction(self, text):
-        self._config_list[2]["instruction"] = text
+        self._instruction_list[2]["instruction"] = text
+        self._current_instruction_index = 2
+        self.gemini.system_instruction = self.active_instruction["instruction"]
 
-    def activate_next_answer_config(self):
+    def activate_next_instruction(self):
         self.next()
-        self.gemini.system_instruction = self.active_config["instruction"]
-        return self.active_config
+        self.gemini.system_instruction = self.active_instruction["instruction"]
+        return self.active_instruction
 
 
     @property
@@ -137,7 +139,7 @@ class View:
 
         @self.kb.add("f2")
         def _(event):
-            active_config = self.llm.activate_next_answer_config()
+            active_config = self.llm.activate_next_instruction()
             # self.printer.console.print(active_config)
 
         @self.kb.add("f3")
@@ -161,7 +163,7 @@ class View:
 
 
     def make_bottom_toolbar(self):
-        answer = self.llm.active_config["name"].ljust(6, " ")
+        answer = self.llm.active_instruction["name"].ljust(6, " ")
         toolbar_string = f'  {answer}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history" if self.llm.has_history() else "chat is empty"}\n'
         toolbar_string += '<style bg="#aaaaaa">  F2       F3          F4               Ctrl-q   </style>'
         return HTML(toolbar_string)
