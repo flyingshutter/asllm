@@ -16,40 +16,40 @@ import tempfile
 import gemini_search
 
 
-
-help_str="""**Command Line LLM**  
-`<F2>`     Toggle Standard/Short Answer  
+help_str=r"""**Command Line LLM**  
+`<F2>`     Toggle Standard/Short/Custom Answer  
 `<F3>`     Toggle Google Search  
 `<F4>`     Toggle Url Context  
 `<Ctrl-q>` Clear Chat History  
 `<Ctrl-d>` Exit   (or type exit)  
+`\`        Enter custom system instruction
 """
-
-instruction_dict = { "short": 'answer short and precise, do not explain, just answer the question. If the prompt starts with "exp", give a detailed answer with explanation.',
-                    "long": ""}
-
-allowed_mimetypes = (
-            'text/',
-            'application/pdf',
-            "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif",
-            "video/mp4", "video/mpeg", "video/mov", "video/avi", "video/x-flv", "video/mpg", "video/webm", "video/wmv", "video/3gpp",
-            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg",
-        )
 
 
 class Llm:
     def __init__(self) -> None:
         self.gemini = gemini_search.GeminiSearch()
-
+        self._current_index = 0
+        self._config_list = [{"name":"std", "instruction":''},
+                            {"name":"short", "instruction":'answer short and precise, do not explain, just answer the question. If the prompt starts with }exp", give a detailed answer with explanation.'},
+                            {"name":"custom", "instruction":''}]
 
     @property
-    def give_long_answer(self):
-        return self.gemini.system_instruction == instruction_dict["long"]
+    def active_config(self):
+        return self._config_list[self._current_index]
 
-    @give_long_answer.setter
-    def give_long_answer(self, long_answer_enabled):
-        key = "long" if long_answer_enabled else "short"
-        self.gemini.system_instruction = instruction_dict[key]
+    def next(self):
+        self._current_index = (self._current_index + 1) % len(self._config_list)
+        self.gemini.system_instruction = self.active_config["instruction"]
+        return self.active_config
+
+    def set_custom_instruction(self, text):
+        self._config_list[2]["instruction"] = text
+
+    def activate_next_answer_config(self):
+        self.next()
+        self.gemini.system_instruction = self.active_config["instruction"]
+        return self.active_config
 
 
     @property
@@ -137,8 +137,8 @@ class View:
 
         @self.kb.add("f2")
         def _(event):
-            self.llm.give_long_answer = not self.llm.give_long_answer
-
+            active_config = self.llm.activate_next_answer_config()
+            # self.printer.console.print(active_config)
 
         @self.kb.add("f3")
         def _(event):
@@ -161,8 +161,9 @@ class View:
 
 
     def make_bottom_toolbar(self):
-        toolbar_string = f'  {"std  " if self.llm.give_long_answer else "short"}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history" if self.llm.has_history() else "chat is empty"}\n'
-        toolbar_string += '<style bg="#aaaaaa">  F2      F3          F4               Ctrl-q   </style>'
+        answer = self.llm.active_config["name"].ljust(6, " ")
+        toolbar_string = f'  {answer}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history" if self.llm.has_history() else "chat is empty"}\n'
+        toolbar_string += '<style bg="#aaaaaa">  F2       F3          F4               Ctrl-q   </style>'
         return HTML(toolbar_string)
 
 
@@ -171,10 +172,6 @@ class ReplController:
         self.llm = Llm()
         self.view = View(self.llm)
         self.view.register_keybindings()
-
-
-    # def clear_contents(self):
-    #     self.llm.gemini.clear_contents()
 
 
     def is_prompt_filename(self, prompt):
@@ -219,6 +216,7 @@ class ReplController:
             num_dots += 1
         self.view.printer.console.print("\r[#00ff00]" + "-" * (self.view.printer.console.width - num_dots) + "[/#00ff00]")
         self.view.printer.print_result(result)
+        # self.view.printer.console.print(self.llm.get_active_answer_config())
         self.llm.gemini.add_content(role="model", text=result["model_output"])
 
 
@@ -240,6 +238,10 @@ class ReplController:
                     break
 
                 if len(prompt.strip()) == 0:
+                    continue
+
+                if prompt[0] == "\\":
+                    self.llm.set_custom_instruction(prompt[1:])
                     continue
 
                 file_name = self.is_prompt_filename(prompt)
