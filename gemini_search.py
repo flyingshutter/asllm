@@ -4,7 +4,7 @@
 import os, base64, mimetypes
 from google import genai
 from google.genai import types
-from google.genai.errors import ClientError
+from google.genai.errors import ClientError, ServerError
 
 
 class GeminiSearch():
@@ -88,7 +88,7 @@ class GeminiSearch():
         try:
             for chunk in self.client.models.generate_content_stream(model=self.model, contents=self.contents, config=self.make_config()):  
                yield chunk
-        except ClientError as e:
+        except (ClientError, ServerError) as e:
             print(e)
 
 
