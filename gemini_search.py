@@ -7,6 +7,15 @@ from google.genai import types
 from google.genai.errors import ClientError, ServerError
 
 
+allowed_mimetypes = (
+    'text/',
+    'application/pdf',
+    "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif",
+    "video/mp4", "video/mpeg", "video/mov", "video/avi", "video/x-flv", "video/mpg", "video/webm", "video/wmv", "video/3gpp",
+    "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg",
+)
+
+
 class GeminiSearch():
     def __init__(self):
         self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))

@@ -203,7 +203,7 @@ class ReplController:
 
     def is_file_allowed(self, mime_type_tuple):
         if type(mime_type_tuple[0]) == str:
-            for entry in allowed_mimetypes:
+            for entry in gemini_search.allowed_mimetypes:
                 if entry in mime_type_tuple[0]:
                     return True
         return False
