@@ -8,7 +8,7 @@ from google.genai.errors import ClientError, ServerError
 
 
 allowed_mimetypes = (
-    'text/',
+    'text/plain',
     'application/pdf',
     "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif",
     "video/mp4", "video/mpeg", "video/mov", "video/avi", "video/x-flv", "video/mpg", "video/webm", "video/wmv", "video/3gpp",
@@ -69,13 +69,7 @@ class GeminiSearch():
         )]
 
 
-    def add_file_to_content(self, file_name):
-        mime_type = mimetypes.guess_type(file_name)[0]
-        with open(file_name, "rb") as f:
-            encoded_string = base64.b64encode(f.read()).decode('utf-8')
-        with open(file_name, "rb") as f:
-            bin_data = f.read()
-
+    def add_file_to_content(self, bin_data, mime_type):
         self.contents += [types.Content(
             role="user",
             parts=[

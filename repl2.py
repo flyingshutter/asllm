@@ -13,7 +13,7 @@ from rich.markdown import Markdown
 
 import os, sys, subprocess, mimetypes
 import tempfile
-import gemini_search
+import gemini_search, filehandling
 
 
 help_str=r"""**Command Line LLM**  
@@ -246,16 +246,14 @@ class ReplController:
                     self.llm.set_custom_instruction(prompt[1:])
                     continue
 
-                file_name = self.is_prompt_filename(prompt)
-                if file_name != "":
-                    mime_type_tuple = mimetypes.guess_type(file_name)
-                    if self.is_file_allowed(mime_type_tuple):
-                        self.view.printer.console.print(f"[#00ff44]file accepted[/#00ff44]")
-                        self.llm.gemini.add_file_to_content(file_name)
-                        continue
-                    else:
-                        self.view.printer.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {mime_type_tuple[0]}")
-                        continue
+                file_data = filehandling.FileHandler(prompt, gemini_search.allowed_mimetypes).handle()
+                if "rejected_mime_type" in file_data.keys():
+                    self.view.printer.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {file_data["mimetype"]}")
+                    continue
+                elif file_data.get("bin_data"):
+                    self.view.printer.console.print(f"[#00ff44]file accepted[/#00ff44]")
+                    self.llm.gemini.add_file_to_content(file_data["bin_data"], file_data["mimetype"])
+                    continue
 
                 self.process_prompt(prompt)
 
@@ -278,4 +276,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv)
-
