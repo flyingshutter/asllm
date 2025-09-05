@@ -248,7 +248,7 @@ class ReplController:
 
                 file_data = filehandling.FileHandler(prompt, gemini_search.allowed_mimetypes).handle()
                 if "rejected_mime_type" in file_data.keys():
-                    self.view.printer.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {file_data["mimetype"]}")
+                    self.view.printer.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {file_data['mimetype']}")
                     continue
                 elif file_data.get("bin_data"):
                     self.view.printer.console.print(f"[#00ff44]file accepted[/#00ff44]")
