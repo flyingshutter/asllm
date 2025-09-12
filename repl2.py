@@ -97,10 +97,17 @@ class Llm:
                 if chunk.candidates and chunk.candidates[0].url_context_metadata and chunk.candidates[0].url_context_metadata.url_metadata:
                     url_metadata += chunk.candidates[0].url_context_metadata.url_metadata
 
+            if chunk.candidates:
+                for candidate in chunk.candidates:
+                    if candidate.content.parts:
+                        for part in candidate.content.parts:
+                            parts.append(part)
+
             yield {
                 "model_output":model_output,
                 "grounding_chunks":grounding_chunks,
-                "url_metadata":url_metadata
+                "url_metadata":url_metadata,
+                "parts":parts,
                 }
 
 
