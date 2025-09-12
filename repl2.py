@@ -12,9 +12,9 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 import os, sys, subprocess, mimetypes
+import json, re
 import tempfile
 import gemini_search, filehandling
-
 
 help_str=r"""**Command Line LLM**  
 `<F2>`     Toggle Standard/Short/Custom Answer  
@@ -193,8 +193,10 @@ class ReplController:
             num_dots += 1
         self.view.printer.console.print("\r[#00ff00]" + "-" * (self.view.printer.console.width - num_dots) + "[/#00ff00]")
         self.view.printer.print_result(result)
-        # self.view.printer.console.print(self.llm.get_active_answer_config())
         self.llm.gemini.add_content(role="model", text=result["model_output"])
+
+        embedded_json_dicts = JsonExtractor().extract(result["model_output"])
+        print(embedded_json_dicts)
 
 
     def run_once(self, prompt):
@@ -238,6 +240,24 @@ class ReplController:
             except (EOFError):
                 break
 
+
+class JsonExtractor:
+    def __init__(self) -> None:
+        pass
+
+    def extract(self, text):
+        json_strings = re.findall(r"(?<=```json).*?(?=```)", text, flags=re.MULTILINE| re.DOTALL)
+        result = []
+        for json_string in json_strings:
+            tmp_result = []
+            try:
+                tmp_result = json.loads(json_string)
+            except (json.JSONDecodeError, TypeError) as e:
+                print(f"Error: Could not decode json_string: {json_string}\n", e)
+            if tmp_result:
+                result += tmp_result
+
+                return result
 
 def main(argv):
     controller = ReplController()
