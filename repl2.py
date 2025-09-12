@@ -176,39 +176,6 @@ class ReplController:
         self.view.register_keybindings()
 
 
-    def is_prompt_filename(self, prompt):
-        if os.path.isfile(prompt.strip()):
-            #self.console.print("file detected", end=" | ")
-            file_name = prompt.strip()
-            return file_name
-
-        if os.path.isfile(prompt.strip()[1:-1]):
-            #self.console.print("file with '' detected", end=" | ")
-            file_name = prompt.strip()[1:-1]
-            return file_name
-
-        if sys.platform == "win32":
-            try:
-                win_path = subprocess.run(f"cygpath -w {prompt.strip()}", capture_output=True, text=True).stdout[:-1]
-
-                if os.path.isfile(win_path):
-                    #self.console.print("win file detected", end=" | ")
-                    file_name = prompt.strip()
-                    return win_path
-            except:
-                pass
-
-        return ""
-
-
-    def is_file_allowed(self, mime_type_tuple):
-        if type(mime_type_tuple[0]) == str:
-            for entry in gemini_search.allowed_mimetypes:
-                if entry in mime_type_tuple[0]:
-                    return True
-        return False
-
-
     def process_prompt(self, prompt):
         num_dots = 0
         result = {}
