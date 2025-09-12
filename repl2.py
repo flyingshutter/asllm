@@ -38,7 +38,7 @@ class Llm:
     def active_instruction(self):
         return self._instruction_list[self._current_instruction_index]
 
-    def next(self):
+    def activate_next_instruction(self):
         self._current_instruction_index = (self._current_instruction_index + 1) % len(self._instruction_list)
         self.gemini.system_instruction = self.active_instruction["instruction"]
         return self.active_instruction
@@ -47,11 +47,6 @@ class Llm:
         self._instruction_list[2]["instruction"] = text
         self._current_instruction_index = 2
         self.gemini.system_instruction = self.active_instruction["instruction"]
-
-    def activate_next_instruction(self):
-        self.next()
-        self.gemini.system_instruction = self.active_instruction["instruction"]
-        return self.active_instruction
 
 
     @property
