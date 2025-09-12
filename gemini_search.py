@@ -102,6 +102,6 @@ class GeminiSearch():
 
 if __name__ == "__main__":
     llm = GeminiSearch()
-    for chunk in llm.generate("hi"):
+    for chunk in llm.generate_stream("hi"):
         print(chunk.text)
 
