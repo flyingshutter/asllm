@@ -84,7 +84,8 @@ class Llm:
         model_output = ""
         grounding_chunks = []
         url_metadata = []
-        for chunk in self.gemini.generate(prompt):
+        parts = []
+        for chunk in self.gemini.generate_stream(prompt):
             if type(chunk.text)==str:
                 model_output += chunk.text
 

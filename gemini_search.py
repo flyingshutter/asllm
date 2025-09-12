@@ -80,12 +80,17 @@ class GeminiSearch():
             ],
         )]
 
+    def add_youtube_video_to_content(self, url):
+        self.contents += [types.Content(
+            role="user",
+            parts = [ types.Part( file_data=types.FileData(file_uri=url) ), ]
+        )]
 
     def clear_contents(self):
         self.contents = []
 
 
-    def generate(self, user_prompt):
+    def generate_stream(self, user_prompt):
         self.add_content(role="user", text=user_prompt)
 
         try:
