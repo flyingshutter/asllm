@@ -20,7 +20,7 @@ class GeminiSearch():
     def __init__(self):
         self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        self._system_instruction = [types.Part.from_text(text="")]
+        self._system_instruction = ""
         self.tools_state = {"url_context":True, "google_search":True}
 
         self.model = "gemini-2.5-flash"
@@ -29,11 +29,11 @@ class GeminiSearch():
 
     @property
     def system_instruction(self):
-        return self._system_instruction[0].text
+        return self._system_instruction
 
     @system_instruction.setter
     def system_instruction(self, text):
-        self._system_instruction = [types.Part.from_text(text=text)]
+        self._system_instruction = text
 
 
     def make_tool_list(self):
