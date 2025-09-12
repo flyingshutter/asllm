@@ -75,6 +75,16 @@ class UrlFileLoader:
         return ""
 
 
+class YoutubeValidator:
+    def __init__(self, url) -> None:
+        self.url = url
+
+    def validate(self):
+        match = re.search(r"https://www.youtube.com/watch\?v=.{11}", self.url)
+        if match:
+            return match.string
+
+
 class FileHandler:
     def __init__(self, prompt, allowed_mimetypes) -> None:
         self.prompt = prompt

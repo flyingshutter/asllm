@@ -223,6 +223,11 @@ class ReplController:
                     self.llm.set_custom_instruction(prompt[1:])
                     continue
 
+                if url := filehandling.YoutubeValidator(prompt).validate():
+                    self.llm.gemini.add_youtube_video_to_content(url)
+                    self.view.printer.console.print(f"[#00ff44]youtube video accepted[/#00ff44]")
+                    continue
+
                 file_data = filehandling.FileHandler(prompt, gemini_search.allowed_mimetypes).handle()
                 if "rejected_mime_type" in file_data.keys():
                     self.view.printer.console.print(f"[#ff4400]file rejected, it has non allowed mimetype:[/#ff4400] {file_data['mimetype']}")
