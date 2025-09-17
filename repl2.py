@@ -185,14 +185,15 @@ class ReplController:
         result = {}
         for result in self.llm.ask_llm(prompt):
             self.view.printer.console.print("\r[#00ff00]" + "-", end="")
-
             num_dots += 1
-        self.view.printer.console.print("\r[#00ff00]" + "-" * (self.view.printer.console.width - num_dots) + "[/#00ff00]")
-        self.view.printer.print_result(result)
-        self.llm.gemini.add_content(role="model", text=result["model_output"])
 
-        embedded_json_dicts = JsonExtractor().extract(result["model_output"])
-        print(embedded_json_dicts)
+        self.view.printer.console.print("\r[#00ff00]" + "-" * (self.view.printer.console.width - num_dots) + "[/#00ff00]")
+
+        if result:
+            self.view.printer.print_result(result)
+            self.llm.gemini.add_content(role="model", text=result["model_output"])
+            embedded_json_dicts = JsonExtractor().extract(result["model_output"])
+            print(embedded_json_dicts)
 
 
     def run_once(self, prompt):
