@@ -5,21 +5,18 @@ import re
 import os, sys
 
 class FileLoader(Protocol):
-    def load(self, file_name) -> bytes:
+    def load(self) -> bytes:
         ...
 
     def get_mimetype(self, file_name) -> (str | None):
         ...
 
-    def validate(self) -> str:
+    def validate(self, prompt) -> str:
         ...
 
 
 
 class LocalFileLoader:
-    def __init__(self, filepath) -> None:
-        self.filepath = filepath
-
     def load(self, file_name):
         with open(file_name, "rb") as f:
             bin_data = f.read()
@@ -29,15 +26,15 @@ class LocalFileLoader:
         mimetype = mimetypes.guess_type(file_name)
         return mimetype[0]
 
-    def validate(self) -> str:
-        if os.path.isfile(self.filepath.strip()):
+    def validate(self, filepath) -> str:
+        if os.path.isfile(filepath.strip()):
             #self.console.print("file detected", end=" | ")
-            file_name = self.filepath.strip()
+            file_name = filepath.strip()
             return file_name
 
-        if os.path.isfile(self.filepath.strip()[1:-1]):
+        if os.path.isfile(filepath.strip()[1:-1]):
             #self.console.print("file with '' detected", end=" | ")
-            file_name = self.filepath.strip()[1:-1]
+            file_name = filepath.strip()[1:-1]
             return file_name
 
         if sys.platform == "win32":
@@ -46,7 +43,7 @@ class LocalFileLoader:
 
                 if os.path.isfile(win_path):
                     #self.console.print("win file detected", end=" | ")
-                    file_name = self.filepath.strip()
+                    file_name = filepath.strip()
                     return win_path
             except:
                 pass
@@ -55,23 +52,22 @@ class LocalFileLoader:
 
 
 class UrlFileLoader:
-    def __init__(self, url) -> None:
-        self.url = url
+    def __init__(self) -> None:
         self.headers = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0"}
 
-    def load(self, file_name):
-        response = requests.get(file_name, allow_redirects=True, timeout=5, headers=self.headers) 
+    def load(self, url):
+        response = requests.get(url, allow_redirects=True, timeout=5, headers=self.headers) 
         return response.content
 
-    def get_mimetype(self, file_name):
-        response = requests.head(file_name, allow_redirects=True, timeout=5, headers=self.headers)
+    def get_mimetype(self, url):
+        response = requests.head(url, allow_redirects=True, timeout=5, headers=self.headers)
         content_type = response.headers.get('Content-Type')
         return content_type
 
-    def validate(self) -> str:
+    def validate(self, url) -> str:
         pat = re.compile(r"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/%\w\.-]*)*\/?$")
-        if re.fullmatch(pat, self.url):
-            return self.url
+        if re.fullmatch(pat, url):
+            return url
         return ""
 
 
@@ -100,8 +96,8 @@ class FileHandler:
 
     def handle(self):
         for fl in self.file_loaders:
-            loader = fl(self.prompt)
-            if file_name := loader.validate():
+            loader = fl()
+            if file_name := loader.validate(self.prompt):
                 mimetype = loader.get_mimetype(file_name)
                 if mimetype in self.allowed_mimetypes:
                     return {"bin_data": loader.load(file_name), "mimetype": mimetype}
