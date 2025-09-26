@@ -5,7 +5,7 @@ import re
 import os, sys
 
 class FileLoader(Protocol):
-    def load(self) -> bytes:
+    def load(self, file_name) -> bytes:
         ...
 
     def get_mimetype(self, file_name) -> (str | None):
@@ -26,15 +26,15 @@ class LocalFileLoader:
         mimetype = mimetypes.guess_type(file_name)
         return mimetype[0]
 
-    def validate(self, filepath) -> str:
-        if os.path.isfile(filepath.strip()):
+    def validate(self, prompt) -> str:
+        if os.path.isfile(prompt.strip()):
             #self.console.print("file detected", end=" | ")
-            file_name = filepath.strip()
+            file_name = prompt.strip()
             return file_name
 
-        if os.path.isfile(filepath.strip()[1:-1]):
+        if os.path.isfile(prompt.strip()[1:-1]):
             #self.console.print("file with '' detected", end=" | ")
-            file_name = filepath.strip()[1:-1]
+            file_name = prompt.strip()[1:-1]
             return file_name
 
         if sys.platform == "win32":
@@ -43,7 +43,7 @@ class LocalFileLoader:
 
                 if os.path.isfile(win_path):
                     #self.console.print("win file detected", end=" | ")
-                    file_name = filepath.strip()
+                    file_name = prompt.strip()
                     return win_path
             except:
                 pass
@@ -55,19 +55,19 @@ class UrlFileLoader:
     def __init__(self) -> None:
         self.headers = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0"}
 
-    def load(self, url):
-        response = requests.get(url, allow_redirects=True, timeout=5, headers=self.headers) 
+    def load(self, file_name):
+        response = requests.get(file_name, allow_redirects=True, timeout=5, headers=self.headers) 
         return response.content
 
-    def get_mimetype(self, url):
-        response = requests.head(url, allow_redirects=True, timeout=5, headers=self.headers)
+    def get_mimetype(self, file_name):
+        response = requests.head(file_name, allow_redirects=True, timeout=5, headers=self.headers)
         content_type = response.headers.get('Content-Type')
         return content_type
 
-    def validate(self, url) -> str:
+    def validate(self, prompt) -> str:
         pat = re.compile(r"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/%\w\.-]*)*\/?$")
-        if re.fullmatch(pat, url):
-            return url
+        if re.fullmatch(pat, prompt):
+            return prompt
         return ""
 
 
