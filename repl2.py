@@ -220,7 +220,8 @@ class ReplController:
                     self.llm.set_custom_instruction(prompt[1:])
                     continue
 
-                if url := filehandling.YoutubeValidator(prompt).validate():
+                if filehandling.YoutubeValidator().validate(prompt):
+                    url = filehandling.YoutubeValidator().get_url(prompt)
                     self.llm.gemini.add_youtube_video_to_content(url)
                     self.view.printer.console.print(f"[#00ff44]youtube video accepted[/#00ff44]")
                     continue

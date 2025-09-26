@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Protocol
+from typing import Protocol, Optional
 import requests
 import re
 import os, sys
@@ -76,12 +76,18 @@ class UrlFileLoader:
 
 
 class YoutubeValidator:
-    def __init__(self, url) -> None:
-        self.url = url
+    @staticmethod
+    def _match(prompt) -> Optional[re.Match]:
+        match = re.search(r"https://www.youtube.com/watch\?v=.{11}", prompt)
+        return match
 
-    def validate(self):
-        match = re.search(r"https://www.youtube.com/watch\?v=.{11}", self.url)
-        if match:
+    @staticmethod
+    def validate(prompt):
+        return True if YoutubeValidator._match(prompt) else False
+
+    @staticmethod
+    def get_url(prompt):
+        if match := YoutubeValidator._match(prompt):
             return match.string
 
 
