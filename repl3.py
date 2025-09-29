@@ -20,7 +20,7 @@ import tempfile
 import gemini_search, filehandling
 
 help_str=r"""**Command Line LLM**  
-read youtube videos from url, pdf/image/video/audio from filepath  
+read youtube videos from url, pdf/image/video/audio from filepath or url  
 `<F2>`     Toggle Standard/Short/Custom Answer  
 `<F3>`     Toggle Google Search  
 `<F4>`     Toggle Url Context  
