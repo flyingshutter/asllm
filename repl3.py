@@ -181,7 +181,7 @@ class View:
 
     def make_bottom_toolbar(self):
         answer = self.llm.active_instruction["name"].ljust(6, " ")
-        toolbar_string = f'  {answer}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history" if self.llm.has_history() else "chat is empty"}    {self.llm.gemini.model.short_name}\n'
+        toolbar_string = f'  {answer}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history  " if self.llm.has_history() else "chat is empty"}    {self.llm.gemini.model.short_name}\n'
         toolbar_string += '<style bg="#aaaaaa">  F2       F3          F4               Ctrl-q           F5</style>'
         return HTML(toolbar_string)
 
@@ -272,6 +272,23 @@ class ExitHandler(BreakHandler):
         pass
 
 
+class SystemInstructionHandler(ContinueHandler):
+    def __init__(self, llm, view, successor: Optional[PromptHandler] = None) -> None:
+        super().__init__(successor)
+        self.llm = llm
+        self.view = view
+
+    def _check_responsibility(self, prompt: str) -> bool:
+        if prompt.strip().startswith("\\"):
+            return True
+        return False
+
+    def _execute(self, prompt: str):
+        custom_instruction = prompt.strip()[1:]
+        self.llm.set_custom_instruction(custom_instruction)
+        self.view.printer.console.print(f"[#00ff44]custom instruction set to: {custom_instruction}[/#00ff44]")
+
+
 class YoutubeUrlHandler(ContinueHandler):
     def __init__(self, llm, view, successor:Optional[PromptHandler]=None) -> None:
         super().__init__(successor)
@@ -309,23 +326,6 @@ class FileHandler(ContinueHandler):
             bin_data = self.file_loader.load(file_name)
             self.view.printer.console.print(f"[#00ff44]file accepted[/#00ff44]")
             self.llm.gemini.add_file_to_content(bin_data, mimetype)
-
-
-class SystemInstructionHandler(ContinueHandler):
-    def __init__(self, llm, view, successor: Optional[PromptHandler] = None) -> None:
-        super().__init__(successor)
-        self.llm = llm
-        self.view = view
-
-    def _check_responsibility(self, prompt: str) -> bool:
-        if prompt.strip().startswith("\\"):
-            return True
-        return False
-
-    def _execute(self, prompt: str):
-        custom_instruction = prompt.strip()[1:]
-        self.llm.set_custom_instruction(custom_instruction)
-        self.view.printer.console.print(f"[#00ff44]custom instruction set to: {custom_instruction}[/#00ff44]")
 
 
 class DefaultHandler(ContinueHandler):
@@ -391,11 +391,11 @@ class ReplController:
         self.view.printer.console.print(Markdown(help_str))
 
         h_llm = DefaultHandler(self.llm, self.view)
-        h_instruction = SystemInstructionHandler(self.llm, self.view, h_llm)
-        h_url_files = FileHandler(self.llm, self.view, filehandling.UrlFileLoader(), h_instruction)
+        h_url_files = FileHandler(self.llm, self.view, filehandling.UrlFileLoader(), h_llm)
         h_local_files = FileHandler(self.llm, self.view, filehandling.LocalFileLoader(), h_url_files)
         h_youtube_url = YoutubeUrlHandler(self.llm, self.view, h_local_files)
-        h_empty = EmptyPromptHandler(h_youtube_url)
+        h_instruction = SystemInstructionHandler(self.llm, self.view, h_youtube_url)
+        h_empty = EmptyPromptHandler(h_instruction)
         h_exit = ExitHandler(h_empty)
 
         while True:
