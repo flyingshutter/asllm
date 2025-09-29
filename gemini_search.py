@@ -1,10 +1,11 @@
 ################################################################################
 #               https://ai.google.dev/gemini-api/docs                          #
 ################################################################################
-import os, base64, mimetypes
+import os
 from google import genai
 from google.genai import types
 from google.genai.errors import ClientError, ServerError
+import models
 
 
 allowed_mimetypes = (
@@ -23,7 +24,8 @@ class GeminiSearch():
         self._system_instruction = ""
         self.tools_state = {"url_context":True, "google_search":True}
 
-        self.model = "gemini-2.5-flash"
+        self.known_models = (models.GEMINI_2_5_PRO, models.GEMINI_2_5_FLASH, models.GEMINI_2_5_FLASH_LITE)
+        self.model = self.known_models[1]()
         self.contents = []
 
 
@@ -44,16 +46,6 @@ class GeminiSearch():
             tools += [types.Tool(google_search=types.GoogleSearch())]
 
         return tools
-
-
-    def make_config(self):
-        config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(thinking_budget=0),
-            tools=self.make_tool_list(),
-            system_instruction=self._system_instruction,
-            response_mime_type="text/plain",
-        )
-        return config
 
 
     def set_tool_state(self, tool_name, set_active):
@@ -91,10 +83,12 @@ class GeminiSearch():
 
 
     def generate_stream(self, user_prompt):
+        tool_list = self.make_tool_list()
+        config = self.model.make_config(self._system_instruction, tool_list)
         self.add_content(role="user", text=user_prompt)
 
         try:
-            for chunk in self.client.models.generate_content_stream(model=self.model, contents=self.contents, config=self.make_config()):  
+            for chunk in self.client.models.generate_content_stream(model=self.model.name, contents=self.contents, config=config):  
                yield chunk
         except (ClientError, ServerError) as e:
             print(e)

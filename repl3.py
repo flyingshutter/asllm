@@ -24,6 +24,7 @@ read youtube videos from url, pdf/image/video/audio from filepath
 `<F2>`     Toggle Standard/Short/Custom Answer  
 `<F3>`     Toggle Google Search  
 `<F4>`     Toggle Url Context  
+`<F5>`     Toggle Gemini Models (pro, flash, flash_lite)  
 `<Ctrl-q>` Clear Chat History  
 `<Ctrl-d>` Exit (or type exit)  
 `\`        Enter custom system instruction
@@ -33,6 +34,7 @@ read youtube videos from url, pdf/image/video/audio from filepath
 class Llm:
     def __init__(self) -> None:
         self.gemini = gemini_search.GeminiSearch()
+        self._current_model_index = 1
         self._current_instruction_index = 0
         self._instruction_list = [{"name":"std", "instruction":''},
                             {"name":"short", "instruction":'answer short and precise, do not explain, just answer the question. If the prompt starts with "exp", give a detailed answer with explanation.'},
@@ -51,6 +53,10 @@ class Llm:
         self._instruction_list[2]["instruction"] = text
         self._current_instruction_index = 2
         self.gemini.system_instruction = self.active_instruction["instruction"]
+
+    def activate_next_model(self):
+        self._current_model_index = (self._current_model_index + 1) % len(self.gemini.known_models)
+        self.gemini.model = self.gemini.known_models[self._current_model_index]()
 
 
     @property
@@ -157,6 +163,10 @@ class View:
         def _(event):
             self.llm.use_url_context_tool = not self.llm.use_url_context_tool
 
+        @self.kb.add("f5")
+        def _(event):
+            self.llm.activate_next_model()
+
 
     def get_user_input(self):
         prompt = self.session.prompt(f'prompt> ',
@@ -171,8 +181,8 @@ class View:
 
     def make_bottom_toolbar(self):
         answer = self.llm.active_instruction["name"].ljust(6, " ")
-        toolbar_string = f'  {answer}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history" if self.llm.has_history() else "chat is empty"}\n'
-        toolbar_string += '<style bg="#aaaaaa">  F2       F3          F4               Ctrl-q   </style>'
+        toolbar_string = f'  {answer}   {"google   " if self.llm.use_google_search_tool else "no google"}   {"url context   "  if self.llm.use_url_context_tool else "no url context"}   {"has history" if self.llm.has_history() else "chat is empty"}    {self.llm.gemini.model.short_name}\n'
+        toolbar_string += '<style bg="#aaaaaa">  F2       F3          F4               Ctrl-q           F5</style>'
         return HTML(toolbar_string)
 
 
