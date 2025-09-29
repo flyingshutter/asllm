@@ -311,6 +311,23 @@ class FileHandler(ContinueHandler):
             self.llm.gemini.add_file_to_content(bin_data, mimetype)
 
 
+class SystemInstructionHandler(ContinueHandler):
+    def __init__(self, llm, view, successor: Optional[PromptHandler] = None) -> None:
+        super().__init__(successor)
+        self.llm = llm
+        self.view = view
+
+    def _check_responsibility(self, prompt: str) -> bool:
+        if prompt.strip().startswith("\\"):
+            return True
+        return False
+
+    def _execute(self, prompt: str):
+        custom_instruction = prompt.strip()[1:]
+        self.llm.set_custom_instruction(custom_instruction)
+        self.view.printer.console.print(f"[#00ff44]custom instruction set to: {custom_instruction}[/#00ff44]")
+
+
 class DefaultHandler(ContinueHandler):
     def __init__(self, llm, view, successor: Optional[PromptHandler] = None) -> None:
         super().__init__(successor)
@@ -374,7 +391,8 @@ class ReplController:
         self.view.printer.console.print(Markdown(help_str))
 
         h_llm = DefaultHandler(self.llm, self.view)
-        h_url_files = FileHandler(self.llm, self.view, filehandling.UrlFileLoader(), h_llm)
+        h_instruction = SystemInstructionHandler(self.llm, self.view, h_llm)
+        h_url_files = FileHandler(self.llm, self.view, filehandling.UrlFileLoader(), h_instruction)
         h_local_files = FileHandler(self.llm, self.view, filehandling.LocalFileLoader(), h_url_files)
         h_youtube_url = YoutubeUrlHandler(self.llm, self.view, h_local_files)
         h_empty = EmptyPromptHandler(h_youtube_url)
