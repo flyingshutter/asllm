@@ -1,7 +1,5 @@
 # asllm #
+<img width="668" height="363" alt="gimp" src="https://github.com/user-attachments/assets/2180aebf-3b07-40dc-965f-76632c83b10a" />
 
-Simple command line interface to gemini using prompt _toolkit and rich for Markdown formatting of output.
+Simple python command line interface to gemini using prompt _toolkit and rich for Markdown formatting of output.
 Expects the api key in an environment variable named GEMINI_API_KEY
-
-*This is my playground, don't expect anything to work or to be safe.*
-
